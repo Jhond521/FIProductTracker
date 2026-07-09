@@ -1,0 +1,151 @@
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.dashboard-subtitle {
+  color: var(--color-text-muted);
+  margin-top: 6px;
+}
+
+.dashboard-stats {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.dashboard-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-stat-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.dashboard-stat-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.dashboard-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.product-card-market {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+}
+
+.product-card-rate {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-terracotta);
+  font-size: 16px;
+}
+
+.product-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.product-card-meta strong {
+  color: var(--color-text);
+}
+
+.product-card-daycount {
+  color: var(--color-text-faint);
+}
+
+.product-card-purchases {
+  margin-top: 18px;
+}
+
+.product-card-purchases-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.product-card-add-purchase {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.product-card-add-purchase:hover {
+  text-decoration: underline;
+}
+
+.product-card-purchase-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.purchase-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.purchase-row:hover {
+  background: var(--color-surface-muted);
+}
+
+.purchase-row-desc {
+  flex: 1;
+  font-weight: 500;
+}
+
+.purchase-row-installments {
+  color: var(--color-text-faint);
+  font-size: 13px;
+}
+
+.purchase-row-amount {
+  font-weight: 600;
+  min-width: 100px;
+  text-align: right;
+}

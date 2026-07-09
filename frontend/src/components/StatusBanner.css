@@ -1,0 +1,17 @@
+.status-banner {
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-banner-loading {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.status-banner-error {
+  background: #fbe9e4;
+  color: #8a3a1f;
+  border: 1px solid #f0c4b4;
+}

@@ -91,3 +91,60 @@ async def test_purchase_not_found_returns_404(async_client):
         f"/api/v1/internal/products/{uuid.uuid4()}/purchases/{uuid.uuid4()}/schedule"
     )
     assert resp.status_code == 404
+
+
+async def test_list_products_returns_all_created_products(async_client):
+    for name in ("Banco Uno", "Banco Dos"):
+        resp = await async_client.post(
+            "/api/v1/internal/products",
+            json={
+                "market": "CO",
+                "institution_name": name,
+                "credit_limit": 1_000_000.0,
+                "ea_rate": 0.30,
+                "day_count_basis": 365,
+            },
+        )
+        assert resp.status_code == 201
+
+    list_resp = await async_client.get("/api/v1/internal/products")
+    assert list_resp.status_code == 200
+    names = {p["institution_name"] for p in list_resp.json()}
+    assert {"Banco Uno", "Banco Dos"}.issubset(names)
+
+
+async def test_list_purchases_for_product(async_client):
+    product_resp = await async_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "CO",
+            "institution_name": "Banco de Prueba",
+            "credit_limit": 5_000_000.0,
+            "ea_rate": 0.36,
+            "day_count_basis": 365,
+        },
+    )
+    product = product_resp.json()
+
+    await async_client.post(
+        f"/api/v1/internal/products/{product['id']}/purchases",
+        json={
+            "amount": 100_000.0,
+            "currency": "COP",
+            "purchase_date": "2026-07-01",
+            "n_installments": 3,
+        },
+    )
+
+    list_resp = await async_client.get(f"/api/v1/internal/products/{product['id']}/purchases")
+    assert list_resp.status_code == 200
+    purchases = list_resp.json()
+    assert len(purchases) == 1
+    assert purchases[0]["amount"] == 100_000.0
+
+
+async def test_list_purchases_for_unknown_product_returns_404(async_client):
+    import uuid
+
+    resp = await async_client.get(f"/api/v1/internal/products/{uuid.uuid4()}/purchases")
+    assert resp.status_code == 404

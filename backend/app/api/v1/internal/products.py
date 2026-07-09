@@ -33,6 +33,12 @@ async def create_product(payload: FinancialProductCreate, db: AsyncSession = Dep
     return product
 
 
+@router.get("", response_model=list[FinancialProductRead])
+async def list_products(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(FinancialProduct))
+    return result.scalars().all()
+
+
 @router.get("/{product_id}", response_model=FinancialProductRead)
 async def get_product(product_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     product = await db.get(FinancialProduct, product_id)
@@ -52,6 +58,16 @@ async def create_purchase(product_id: uuid.UUID, payload: PurchaseCreate, db: As
     await db.commit()
     await db.refresh(purchase)
     return purchase
+
+
+@router.get("/{product_id}/purchases", response_model=list[PurchaseRead])
+async def list_purchases(product_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    product = await db.get(FinancialProduct, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    result = await db.execute(select(Purchase).where(Purchase.product_id == product_id))
+    return result.scalars().all()
 
 
 @router.get("/{product_id}/purchases/{purchase_id}/schedule", response_model=PurchaseScheduleRead)
