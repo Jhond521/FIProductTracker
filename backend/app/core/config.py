@@ -13,5 +13,11 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5174",
     ]
 
+    google_client_id: str = ""
+    jwt_secret_key: str = "dev-only-insecure-secret-change-me"
+    jwt_algorithm: str = "HS256"
+    session_cookie_name: str = "session"
+    session_max_age_seconds: int = 7 * 24 * 60 * 60
+
 
 settings = Settings()

@@ -23,6 +23,8 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/credittracker
       ENVIRONMENT: dev
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-only-insecure-secret-change-me}
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,6 +36,7 @@ services:
       context: ./frontend
       args:
         VITE_API_BASE_URL: http://localhost:8000
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     ports:
       - "5174:80"
     depends_on:

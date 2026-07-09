@@ -19,12 +19,14 @@ class FinancialProduct(Base):
     __tablename__ = "financial_products"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     market: Mapped[str] = mapped_column(String(2), default="CO")  # ISO-ish market code: CO, US
     institution_name: Mapped[str] = mapped_column(String(120))
     credit_limit: Mapped[float] = mapped_column(Numeric(14, 2))
     ea_rate: Mapped[float] = mapped_column(Numeric(6, 4))  # effective annual rate, e.g. 0.3600
     day_count_basis: Mapped[int] = mapped_column(default=365)  # 360 or 365, per-product
 
+    owner: Mapped["User"] = relationship(back_populates="products")  # noqa: F821
     purchases: Mapped[list["Purchase"]] = relationship(back_populates="product")
 
 
