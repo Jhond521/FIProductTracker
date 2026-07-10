@@ -79,10 +79,22 @@
   background: var(--color-terracotta-soft);
 }
 
+.statement-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .statement-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .statement-table {
+    width: max-content;
+    min-width: 100%;
+  }
 }
 
 .statement-table th {

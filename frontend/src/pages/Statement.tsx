@@ -119,48 +119,50 @@ export function Statement() {
           </div>
         </div>
 
-        <table className="statement-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Payment</th>
-              <th>Split</th>
-              <th className="statement-table-num">Principal</th>
-              <th className="statement-table-num">Interest</th>
-              <th className="statement-table-num">Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {schedule.schedule.map((entry) => {
-              const principalPct = (entry.principal_portion / entry.payment) * 100;
-              return (
-                <tr key={entry.installment_number}>
-                  <td>{entry.installment_number}</td>
-                  <td className="statement-table-payment">{formatCOP(entry.payment)}</td>
-                  <td>
-                    <div className="statement-split-bar">
-                      <div
-                        className="statement-split-principal"
-                        style={{ width: `${principalPct}%` }}
-                      />
-                      <div
-                        className="statement-split-interest"
-                        style={{ width: `${100 - principalPct}%` }}
-                      />
-                    </div>
-                  </td>
-                  <td className="statement-table-num statement-table-principal">
-                    {formatCOP(entry.principal_portion)}
-                  </td>
-                  <td className="statement-table-num statement-table-interest">
-                    {formatCOP(entry.interest_portion)}
-                  </td>
-                  <td className="statement-table-num">{formatCOP(entry.remaining_balance)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="statement-table-scroll">
+          <table className="statement-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Payment</th>
+                <th>Split</th>
+                <th className="statement-table-num">Principal</th>
+                <th className="statement-table-num">Interest</th>
+                <th className="statement-table-num">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schedule.schedule.map((entry) => {
+                const principalPct = (entry.principal_portion / entry.payment) * 100;
+                return (
+                  <tr key={entry.installment_number}>
+                    <td>{entry.installment_number}</td>
+                    <td className="statement-table-payment">{formatCOP(entry.payment)}</td>
+                    <td>
+                      <div className="statement-split-bar">
+                        <div
+                          className="statement-split-principal"
+                          style={{ width: `${principalPct}%` }}
+                        />
+                        <div
+                          className="statement-split-interest"
+                          style={{ width: `${100 - principalPct}%` }}
+                        />
+                      </div>
+                    </td>
+                    <td className="statement-table-num statement-table-principal">
+                      {formatCOP(entry.principal_portion)}
+                    </td>
+                    <td className="statement-table-num statement-table-interest">
+                      {formatCOP(entry.interest_portion)}
+                    </td>
+                    <td className="statement-table-num">{formatCOP(entry.remaining_balance)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );
