@@ -36,7 +36,8 @@
     "addPurchase": "+ Add purchase",
     "noPurchases": "No purchases yet.",
     "installmentUnit_one": "installment",
-    "installmentUnit_other": "installments"
+    "installmentUnit_other": "installments",
+    "editCard": "Edit"
   },
   "addCard": {
     "title": "Add a card",
@@ -55,7 +56,13 @@
     "days360": "360 days",
     "submit": "Add card",
     "submitting": "Adding…",
-    "error": "Could not create the card. Try again."
+    "error": "Could not create the card. Try again.",
+    "editTitle": "Edit card",
+    "editSubmit": "Save changes",
+    "editSubmitting": "Saving…",
+    "editError": "Could not save the card. Try again.",
+    "editCardGone": "This card no longer exists.",
+    "editCardLoadError": "Could not load this card."
   },
   "addPurchase": {
     "title": "Add a purchase",
@@ -74,7 +81,12 @@
     "promoLabel": "Interest-free promo",
     "submit": "Add purchase",
     "submitting": "Adding…",
-    "error": "Could not add the purchase. Try again."
+    "error": "Could not add the purchase. Try again.",
+    "editTitle": "Edit purchase",
+    "editSubmit": "Save changes",
+    "editSubmitting": "Saving…",
+    "editError": "Could not save the purchase. Try again.",
+    "editPurchaseGone": "This purchase no longer exists."
   },
   "statement": {
     "title": "Statement",
@@ -90,6 +102,7 @@
     "columnNumber": "#",
     "columnPayment": "Payment",
     "columnSplit": "Split",
-    "columnBalance": "Balance"
+    "columnBalance": "Balance",
+    "editPurchase": "Edit purchase"
   }
 }

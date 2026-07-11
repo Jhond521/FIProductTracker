@@ -36,7 +36,8 @@
     "addPurchase": "+ Agregar compra",
     "noPurchases": "Aún no hay compras.",
     "installmentUnit_one": "cuota",
-    "installmentUnit_other": "cuotas"
+    "installmentUnit_other": "cuotas",
+    "editCard": "Editar"
   },
   "addCard": {
     "title": "Agregar una tarjeta",
@@ -55,7 +56,13 @@
     "days360": "360 días",
     "submit": "Agregar tarjeta",
     "submitting": "Agregando…",
-    "error": "No se pudo crear la tarjeta. Inténtalo de nuevo."
+    "error": "No se pudo crear la tarjeta. Inténtalo de nuevo.",
+    "editTitle": "Editar tarjeta",
+    "editSubmit": "Guardar cambios",
+    "editSubmitting": "Guardando…",
+    "editError": "No se pudo guardar la tarjeta. Inténtalo de nuevo.",
+    "editCardGone": "Esta tarjeta ya no existe.",
+    "editCardLoadError": "No se pudo cargar esta tarjeta."
   },
   "addPurchase": {
     "title": "Agregar una compra",
@@ -74,7 +81,12 @@
     "promoLabel": "Promoción sin intereses",
     "submit": "Agregar compra",
     "submitting": "Agregando…",
-    "error": "No se pudo agregar la compra. Inténtalo de nuevo."
+    "error": "No se pudo agregar la compra. Inténtalo de nuevo.",
+    "editTitle": "Editar compra",
+    "editSubmit": "Guardar cambios",
+    "editSubmitting": "Guardando…",
+    "editError": "No se pudo guardar la compra. Inténtalo de nuevo.",
+    "editPurchaseGone": "Esta compra ya no existe."
   },
   "statement": {
     "title": "Extracto",
@@ -90,6 +102,7 @@
     "columnNumber": "#",
     "columnPayment": "Pago",
     "columnSplit": "Reparto",
-    "columnBalance": "Saldo"
+    "columnBalance": "Saldo",
+    "editPurchase": "Editar compra"
   }
 }

@@ -17,10 +17,12 @@ from app.products.models import FinancialProduct, Purchase
 from app.products.schemas import (
     FinancialProductCreate,
     FinancialProductRead,
+    FinancialProductUpdate,
     InstallmentEntryRead,
     PurchaseCreate,
     PurchaseRead,
     PurchaseScheduleRead,
+    PurchaseUpdate,
 )
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -33,6 +35,16 @@ async def _get_owned_product(
     if not product or product.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
+
+
+async def _get_owned_purchase(
+    product_id: uuid.UUID, purchase_id: uuid.UUID, current_user: User, db: AsyncSession
+) -> Purchase:
+    await _get_owned_product(product_id, current_user, db)
+    purchase = await db.get(Purchase, purchase_id)
+    if not purchase or purchase.product_id != product_id:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+    return purchase
 
 
 @router.post("", response_model=FinancialProductRead, status_code=201)
@@ -67,6 +79,21 @@ async def get_product(
     return await _get_owned_product(product_id, current_user, db)
 
 
+@router.patch("/{product_id}", response_model=FinancialProductRead)
+async def update_product(
+    product_id: uuid.UUID,
+    payload: FinancialProductUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    product = await _get_owned_product(product_id, current_user, db)
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(product, field, value)
+    await db.commit()
+    await db.refresh(product)
+    return product
+
+
 @router.post("/{product_id}/purchases", response_model=PurchaseRead, status_code=201)
 async def create_purchase(
     product_id: uuid.UUID,
@@ -95,6 +122,22 @@ async def list_purchases(
     return result.scalars().all()
 
 
+@router.patch("/{product_id}/purchases/{purchase_id}", response_model=PurchaseRead)
+async def update_purchase(
+    product_id: uuid.UUID,
+    purchase_id: uuid.UUID,
+    payload: PurchaseUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    purchase = await _get_owned_purchase(product_id, purchase_id, current_user, db)
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(purchase, field, value)
+    await db.commit()
+    await db.refresh(purchase)
+    return purchase
+
+
 @router.get("/{product_id}/purchases/{purchase_id}/schedule", response_model=PurchaseScheduleRead)
 async def get_purchase_schedule(
     product_id: uuid.UUID,
@@ -114,6 +157,9 @@ async def get_purchase_schedule(
         raise HTTPException(status_code=404, detail="Purchase not found")
     purchase, product = row
 
+    # Schedule is always computed fresh from current field values, never
+    # persisted — an edit is naturally reflected everywhere on next read,
+    # with no separate "recalculate" step or forward/retroactive split.
     monthly_rate = 0.0 if purchase.interest_free_promo else ea_to_monthly_rate(float(product.ea_rate))
     schedule = amortize_fixed_installments(
         principal=float(purchase.amount),
