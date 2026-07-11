@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { productsApi } from "../api/products";
 import { ApiError } from "../api/client";
 import { Card } from "../components/Card";
@@ -9,6 +10,7 @@ import { StatusBanner } from "../components/StatusBanner";
 
 export function AddCard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [institutionName, setInstitutionName] = useState("");
   const [creditLimit, setCreditLimit] = useState("");
@@ -33,7 +35,7 @@ export function AddCard() {
       });
       navigate("/");
     } catch (err) {
-      setError(err instanceof ApiError ? String(err.message) : "Could not create the card. Try again.");
+      setError(err instanceof ApiError ? String(err.message) : t("addCard.error"));
     } finally {
       setSubmitting(false);
     }
@@ -41,51 +43,51 @@ export function AddCard() {
 
   return (
     <div>
-      <h1>Add a card</h1>
+      <h1>{t("addCard.title")}</h1>
       <p style={{ color: "var(--color-text-muted)", marginTop: 8, marginBottom: 28 }}>
-        Colombia market · full rate and fee details from your card agreement
+        {t("addCard.subtitle")}
       </p>
 
       <Card>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <FormField label="Institution name">
+          <FormField label={t("addCard.institutionLabel")}>
             <input
               type="text"
-              placeholder="Banco Demo"
+              placeholder={t("addCard.institutionPlaceholder")}
               value={institutionName}
               onChange={(e) => setInstitutionName(e.target.value)}
               required
             />
           </FormField>
 
-          <FormField label="Credit limit (COP)" hint="Cupo — the maximum balance the card allows">
+          <FormField label={t("addCard.creditLimitLabel")} hint={t("addCard.creditLimitHint")}>
             <input
               type="number"
               min={1}
               step="1"
-              placeholder="5000000"
+              placeholder={t("addCard.creditLimitPlaceholder")}
               value={creditLimit}
               onChange={(e) => setCreditLimit(e.target.value)}
               required
             />
           </FormField>
 
-          <FormField label="EA rate (%)" hint="Effective annual rate, e.g. 36 for 36%">
+          <FormField label={t("addCard.eaRateLabel")} hint={t("addCard.eaRateHint")}>
             <input
               type="number"
               min={0}
               step="0.01"
-              placeholder="36"
+              placeholder={t("addCard.eaRatePlaceholder")}
               value={eaRatePercent}
               onChange={(e) => setEaRatePercent(e.target.value)}
               required
             />
           </FormField>
 
-          <FormField label="Day-count basis" hint="Bank-specific — check your card agreement">
+          <FormField label={t("addCard.dayCountLabel")} hint={t("addCard.dayCountHint")}>
             <select value={dayCountBasis} onChange={(e) => setDayCountBasis(e.target.value)}>
-              <option value="365">365 days</option>
-              <option value="360">360 days</option>
+              <option value="365">{t("addCard.days365")}</option>
+              <option value="360">{t("addCard.days360")}</option>
             </select>
           </FormField>
 
@@ -93,7 +95,7 @@ export function AddCard() {
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Adding…" : "Add card"}
+              {submitting ? t("addCard.submitting") : t("addCard.submit")}
             </Button>
           </div>
         </form>

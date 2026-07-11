@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../lib/auth/useAuth";
 import { StatusBanner } from "../components/StatusBanner";
 import "./Login.css";
@@ -15,16 +16,26 @@ export function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, i18n } = useTranslation();
   const [error, setError] = useState<string | null>(null);
+  const isSpanish = i18n.language.startsWith("es");
 
   const from = (location.state as LocationState | null)?.from?.pathname ?? "/";
 
   return (
     <div className="login-page">
+      <button
+        type="button"
+        className="layout-lang login-lang"
+        title={t("nav.language")}
+        onClick={() => i18n.changeLanguage(isSpanish ? "en" : "es")}
+      >
+        {isSpanish ? "ES" : "EN"}
+      </button>
       <div className="login-card">
         <span className="layout-brand-mark login-brand-mark">CT</span>
-        <h1>Credit Tracker</h1>
-        <p className="dashboard-subtitle">See the real cost of your credit cards.</p>
+        <h1>{t("login.brand")}</h1>
+        <p className="dashboard-subtitle">{t("login.subtitle")}</p>
 
         {error && <StatusBanner kind="error">{error}</StatusBanner>}
 
@@ -35,24 +46,22 @@ export function Login() {
                 onSuccess={async (credentialResponse) => {
                   setError(null);
                   if (!credentialResponse.credential) {
-                    setError("Google didn't return a credential. Please try again.");
+                    setError(t("login.noCredential"));
                     return;
                   }
                   try {
                     await signIn(credentialResponse.credential);
                     navigate(from, { replace: true });
                   } catch {
-                    setError("Sign-in failed. Please try again.");
+                    setError(t("login.signInFailed"));
                   }
                 }}
-                onError={() => setError("Sign-in failed. Please try again.")}
+                onError={() => setError(t("login.signInFailed"))}
               />
             </div>
           </GoogleOAuthProvider>
         ) : (
-          <StatusBanner kind="error">
-            Google sign-in isn't configured yet (missing VITE_GOOGLE_CLIENT_ID).
-          </StatusBanner>
+          <StatusBanner kind="error">{t("login.notConfigured")}</StatusBanner>
         )}
       </div>
     </div>

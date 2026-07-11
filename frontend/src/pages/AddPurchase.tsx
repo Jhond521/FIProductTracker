@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { productsApi } from "../api/products";
 import { ApiError } from "../api/client";
 import type { FinancialProduct } from "../api/types";
@@ -11,6 +12,7 @@ import { StatusBanner } from "../components/StatusBanner";
 export function AddPurchase() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [product, setProduct] = useState<FinancialProduct | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -37,8 +39,8 @@ export function AddPurchase() {
         if (!cancelled) {
           setLoadError(
             err instanceof ApiError && err.status === 404
-              ? "This card no longer exists."
-              : "Could not load this card.",
+              ? t("addPurchase.cardGone")
+              : t("addPurchase.cardLoadError"),
           );
         }
       });
@@ -46,7 +48,7 @@ export function AddPurchase() {
     return () => {
       cancelled = true;
     };
-  }, [productId]);
+  }, [productId, t]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -65,9 +67,7 @@ export function AddPurchase() {
       });
       navigate("/");
     } catch (err) {
-      setError(
-        err instanceof ApiError ? String(err.message) : "Could not add the purchase. Try again.",
-      );
+      setError(err instanceof ApiError ? String(err.message) : t("addPurchase.error"));
     } finally {
       setSubmitting(false);
     }
@@ -76,11 +76,11 @@ export function AddPurchase() {
   if (loadError) {
     return (
       <div>
-        <h1>Add a purchase</h1>
+        <h1>{t("addPurchase.title")}</h1>
         <StatusBanner kind="error">{loadError}</StatusBanner>
         <p style={{ marginTop: 16 }}>
           <Link to="/" style={{ color: "var(--color-primary)", fontWeight: 600 }}>
-            ← Back to dashboard
+            {t("common.backToDashboard")}
           </Link>
         </p>
       </div>
@@ -89,35 +89,37 @@ export function AddPurchase() {
 
   return (
     <div>
-      <h1>Add a purchase</h1>
+      <h1>{t("addPurchase.title")}</h1>
       <p style={{ color: "var(--color-text-muted)", marginTop: 8, marginBottom: 28 }}>
-        {product ? `To ${product.institution_name}` : "Loading card…"}
+        {product
+          ? t("addPurchase.toInstitution", { institutionName: product.institution_name })
+          : t("addPurchase.loadingCard")}
       </p>
 
       <Card>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <FormField label="Description" hint="Optional — e.g. merchant name">
+          <FormField label={t("addPurchase.descriptionLabel")} hint={t("addPurchase.descriptionHint")}>
             <input
               type="text"
-              placeholder="Electrodomestico"
+              placeholder={t("addPurchase.descriptionPlaceholder")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </FormField>
 
-          <FormField label="Amount (COP)">
+          <FormField label={t("addPurchase.amountLabel")}>
             <input
               type="number"
               min={1}
               step="1"
-              placeholder="600000"
+              placeholder={t("addPurchase.amountPlaceholder")}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
             />
           </FormField>
 
-          <FormField label="Purchase date">
+          <FormField label={t("addPurchase.dateLabel")}>
             <input
               type="date"
               value={purchaseDate}
@@ -126,7 +128,7 @@ export function AddPurchase() {
             />
           </FormField>
 
-          <FormField label="Installments" hint="Number of cuotas">
+          <FormField label={t("addPurchase.installmentsLabel")} hint={t("addPurchase.installmentsHint")}>
             <input
               type="number"
               min={1}
@@ -137,7 +139,7 @@ export function AddPurchase() {
             />
           </FormField>
 
-          <FormField label="Interest-free promo">
+          <FormField label={t("addPurchase.promoLabel")}>
             <input
               type="checkbox"
               checked={interestFreePromo}
@@ -149,7 +151,7 @@ export function AddPurchase() {
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
             <Button type="submit" disabled={submitting || !product}>
-              {submitting ? "Adding…" : "Add purchase"}
+              {submitting ? t("addPurchase.submitting") : t("addPurchase.submit")}
             </Button>
           </div>
         </form>
