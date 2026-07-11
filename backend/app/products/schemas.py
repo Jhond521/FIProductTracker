@@ -1,15 +1,38 @@
 import uuid
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from app.calculations.minimum_payment import US_DEFAULT_FLAT_FLOOR
+from app.calculations.market_rules import VALID_MARKETS
 
 
 class FinancialProductCreate(BaseModel):
     market: str = Field(default="CO", max_length=2)
     institution_name: str
     credit_limit: float = Field(gt=0)
-    ea_rate: float = Field(ge=0, description="Effective annual rate, e.g. 0.36 for 36%")
+    ea_rate: float | None = Field(default=None, ge=0, description="CO: effective annual rate, e.g. 0.36 for 36%")
     day_count_basis: int = Field(default=365, description="360 or 365 — bank-specific, not market-inferred")
+    apr: float | None = Field(default=None, ge=0, description="US: annual percentage rate, e.g. 0.24 for 24%")
+    penalty_rate: float | None = Field(default=None, ge=0, description="Tasa de mora / penalty APR")
+    min_payment_flat_floor: float | None = Field(
+        default=None, ge=0, description="US minimum-payment flat-dollar floor"
+    )
+    installment_plan_available: bool = Field(
+        default=False, description="US: whether a Plan It/Flex Pay style feature is offered"
+    )
+
+    @model_validator(mode="after")
+    def _validate_market_specific_fields(self) -> "FinancialProductCreate":
+        if self.market not in VALID_MARKETS:
+            raise ValueError(f"market must be one of {VALID_MARKETS}")
+        if self.market == "CO" and self.ea_rate is None:
+            raise ValueError("ea_rate is required for the CO market")
+        if self.market == "US" and self.apr is None:
+            raise ValueError("apr is required for the US market")
+        if self.market == "US" and self.min_payment_flat_floor is None:
+            self.min_payment_flat_floor = US_DEFAULT_FLAT_FLOOR
+        return self
 
 
 class FinancialProductRead(FinancialProductCreate):
@@ -27,6 +50,10 @@ class FinancialProductUpdate(BaseModel):
     credit_limit: float | None = Field(default=None, gt=0)
     ea_rate: float | None = Field(default=None, ge=0)
     day_count_basis: int | None = None
+    apr: float | None = Field(default=None, ge=0)
+    penalty_rate: float | None = Field(default=None, ge=0)
+    min_payment_flat_floor: float | None = Field(default=None, ge=0)
+    installment_plan_available: bool | None = None
 
 
 class PurchaseCreate(BaseModel):

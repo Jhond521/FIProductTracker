@@ -12,10 +12,15 @@ export function AddCard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [market, setMarket] = useState<"CO" | "US">("CO");
   const [institutionName, setInstitutionName] = useState("");
   const [creditLimit, setCreditLimit] = useState("");
   const [eaRatePercent, setEaRatePercent] = useState("");
   const [dayCountBasis, setDayCountBasis] = useState("365");
+  const [aprPercent, setAprPercent] = useState("");
+  const [penaltyRatePercent, setPenaltyRatePercent] = useState("");
+  const [minPaymentFlatFloor, setMinPaymentFlatFloor] = useState("");
+  const [installmentPlanAvailable, setInstallmentPlanAvailable] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,11 +32,18 @@ export function AddCard() {
 
     try {
       await productsApi.create({
-        market: "CO",
+        market,
         institution_name: institutionName,
         credit_limit: Number(creditLimit),
-        ea_rate: Number(eaRatePercent) / 100,
         day_count_basis: Number(dayCountBasis),
+        ...(market === "CO"
+          ? { ea_rate: Number(eaRatePercent) / 100 }
+          : {
+              apr: Number(aprPercent) / 100,
+              penalty_rate: penaltyRatePercent ? Number(penaltyRatePercent) / 100 : undefined,
+              min_payment_flat_floor: minPaymentFlatFloor ? Number(minPaymentFlatFloor) : undefined,
+              installment_plan_available: installmentPlanAvailable,
+            }),
       });
       navigate("/");
     } catch (err) {
@@ -45,11 +57,18 @@ export function AddCard() {
     <div>
       <h1>{t("addCard.title")}</h1>
       <p style={{ color: "var(--color-text-muted)", marginTop: 8, marginBottom: 28 }}>
-        {t("addCard.subtitle")}
+        {market === "CO" ? t("addCard.subtitle") : t("addCard.subtitleUs")}
       </p>
 
       <Card>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <FormField label={t("addCard.marketLabel")} hint={t("addCard.marketHint")}>
+            <select value={market} onChange={(e) => setMarket(e.target.value as "CO" | "US")}>
+              <option value="CO">{t("addCard.marketCo")}</option>
+              <option value="US">{t("addCard.marketUs")}</option>
+            </select>
+          </FormField>
+
           <FormField label={t("addCard.institutionLabel")}>
             <input
               type="text"
@@ -60,7 +79,10 @@ export function AddCard() {
             />
           </FormField>
 
-          <FormField label={t("addCard.creditLimitLabel")} hint={t("addCard.creditLimitHint")}>
+          <FormField
+            label={market === "CO" ? t("addCard.creditLimitLabel") : t("addCard.creditLimitLabelUs")}
+            hint={t("addCard.creditLimitHint")}
+          >
             <input
               type="number"
               min={1}
@@ -72,17 +94,66 @@ export function AddCard() {
             />
           </FormField>
 
-          <FormField label={t("addCard.eaRateLabel")} hint={t("addCard.eaRateHint")}>
-            <input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder={t("addCard.eaRatePlaceholder")}
-              value={eaRatePercent}
-              onChange={(e) => setEaRatePercent(e.target.value)}
-              required
-            />
-          </FormField>
+          {market === "CO" ? (
+            <FormField label={t("addCard.eaRateLabel")} hint={t("addCard.eaRateHint")}>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder={t("addCard.eaRatePlaceholder")}
+                value={eaRatePercent}
+                onChange={(e) => setEaRatePercent(e.target.value)}
+                required
+              />
+            </FormField>
+          ) : (
+            <>
+              <FormField label={t("addCard.aprLabel")} hint={t("addCard.aprHint")}>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder={t("addCard.aprPlaceholder")}
+                  value={aprPercent}
+                  onChange={(e) => setAprPercent(e.target.value)}
+                  required
+                />
+              </FormField>
+
+              <FormField label={t("addCard.penaltyRateLabel")} hint={t("addCard.penaltyRateHint")}>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder={t("addCard.penaltyRatePlaceholder")}
+                  value={penaltyRatePercent}
+                  onChange={(e) => setPenaltyRatePercent(e.target.value)}
+                />
+              </FormField>
+
+              <FormField
+                label={t("addCard.minPaymentFloorLabel")}
+                hint={t("addCard.minPaymentFloorHint")}
+              >
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  placeholder={t("addCard.minPaymentFloorPlaceholder")}
+                  value={minPaymentFlatFloor}
+                  onChange={(e) => setMinPaymentFlatFloor(e.target.value)}
+                />
+              </FormField>
+
+              <FormField label={t("addCard.installmentPlanLabel")} hint={t("addCard.installmentPlanHint")}>
+                <input
+                  type="checkbox"
+                  checked={installmentPlanAvailable}
+                  onChange={(e) => setInstallmentPlanAvailable(e.target.checked)}
+                />
+              </FormField>
+            </>
+          )}
 
           <FormField label={t("addCard.dayCountLabel")} hint={t("addCard.dayCountHint")}>
             <select value={dayCountBasis} onChange={(e) => setDayCountBasis(e.target.value)}>

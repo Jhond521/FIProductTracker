@@ -157,6 +157,13 @@ async def get_purchase_schedule(
         raise HTTPException(status_code=404, detail="Purchase not found")
     purchase, product = row
 
+    if product.market != "CO":
+        raise HTTPException(
+            status_code=400,
+            detail="Per-purchase amortization schedules are only available for CO-market cards; "
+            "US cards use average-daily-balance cycle interest, not yet exposed via this endpoint.",
+        )
+
     # Schedule is always computed fresh from current field values, never
     # persisted — an edit is naturally reflected everywhere on next read,
     # with no separate "recalculate" step or forward/retroactive split.

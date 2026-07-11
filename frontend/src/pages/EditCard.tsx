@@ -13,10 +13,15 @@ export function EditCard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [market, setMarket] = useState<"CO" | "US">("CO");
   const [institutionName, setInstitutionName] = useState("");
   const [creditLimit, setCreditLimit] = useState("");
   const [eaRatePercent, setEaRatePercent] = useState("");
   const [dayCountBasis, setDayCountBasis] = useState("365");
+  const [aprPercent, setAprPercent] = useState("");
+  const [penaltyRatePercent, setPenaltyRatePercent] = useState("");
+  const [minPaymentFlatFloor, setMinPaymentFlatFloor] = useState("");
+  const [installmentPlanAvailable, setInstallmentPlanAvailable] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -31,10 +36,17 @@ export function EditCard() {
       .get(productId)
       .then((product) => {
         if (cancelled) return;
+        setMarket(product.market as "CO" | "US");
         setInstitutionName(product.institution_name);
         setCreditLimit(String(product.credit_limit));
-        setEaRatePercent(String(product.ea_rate * 100));
         setDayCountBasis(String(product.day_count_basis));
+        if (product.ea_rate != null) setEaRatePercent(String(product.ea_rate * 100));
+        if (product.apr != null) setAprPercent(String(product.apr * 100));
+        if (product.penalty_rate != null) setPenaltyRatePercent(String(product.penalty_rate * 100));
+        if (product.min_payment_flat_floor != null) {
+          setMinPaymentFlatFloor(String(product.min_payment_flat_floor));
+        }
+        setInstallmentPlanAvailable(product.installment_plan_available);
       })
       .catch((err) => {
         if (!cancelled) {
@@ -64,8 +76,15 @@ export function EditCard() {
       await productsApi.update(productId, {
         institution_name: institutionName,
         credit_limit: Number(creditLimit),
-        ea_rate: Number(eaRatePercent) / 100,
         day_count_basis: Number(dayCountBasis),
+        ...(market === "CO"
+          ? { ea_rate: Number(eaRatePercent) / 100 }
+          : {
+              apr: Number(aprPercent) / 100,
+              penalty_rate: penaltyRatePercent ? Number(penaltyRatePercent) / 100 : undefined,
+              min_payment_flat_floor: minPaymentFlatFloor ? Number(minPaymentFlatFloor) : undefined,
+              installment_plan_available: installmentPlanAvailable,
+            }),
       });
       navigate("/");
     } catch (err) {
@@ -93,7 +112,7 @@ export function EditCard() {
     <div>
       <h1>{t("addCard.editTitle")}</h1>
       <p style={{ color: "var(--color-text-muted)", marginTop: 8, marginBottom: 28 }}>
-        {t("addCard.subtitle")}
+        {market === "CO" ? t("addCard.subtitle") : t("addCard.subtitleUs")}
       </p>
 
       <Card>
@@ -111,7 +130,10 @@ export function EditCard() {
               />
             </FormField>
 
-            <FormField label={t("addCard.creditLimitLabel")} hint={t("addCard.creditLimitHint")}>
+            <FormField
+              label={market === "CO" ? t("addCard.creditLimitLabel") : t("addCard.creditLimitLabelUs")}
+              hint={t("addCard.creditLimitHint")}
+            >
               <input
                 type="number"
                 min={1}
@@ -123,17 +145,69 @@ export function EditCard() {
               />
             </FormField>
 
-            <FormField label={t("addCard.eaRateLabel")} hint={t("addCard.eaRateHint")}>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder={t("addCard.eaRatePlaceholder")}
-                value={eaRatePercent}
-                onChange={(e) => setEaRatePercent(e.target.value)}
-                required
-              />
-            </FormField>
+            {market === "CO" ? (
+              <FormField label={t("addCard.eaRateLabel")} hint={t("addCard.eaRateHint")}>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder={t("addCard.eaRatePlaceholder")}
+                  value={eaRatePercent}
+                  onChange={(e) => setEaRatePercent(e.target.value)}
+                  required
+                />
+              </FormField>
+            ) : (
+              <>
+                <FormField label={t("addCard.aprLabel")} hint={t("addCard.aprHint")}>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder={t("addCard.aprPlaceholder")}
+                    value={aprPercent}
+                    onChange={(e) => setAprPercent(e.target.value)}
+                    required
+                  />
+                </FormField>
+
+                <FormField label={t("addCard.penaltyRateLabel")} hint={t("addCard.penaltyRateHint")}>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder={t("addCard.penaltyRatePlaceholder")}
+                    value={penaltyRatePercent}
+                    onChange={(e) => setPenaltyRatePercent(e.target.value)}
+                  />
+                </FormField>
+
+                <FormField
+                  label={t("addCard.minPaymentFloorLabel")}
+                  hint={t("addCard.minPaymentFloorHint")}
+                >
+                  <input
+                    type="number"
+                    min={0}
+                    step="1"
+                    placeholder={t("addCard.minPaymentFloorPlaceholder")}
+                    value={minPaymentFlatFloor}
+                    onChange={(e) => setMinPaymentFlatFloor(e.target.value)}
+                  />
+                </FormField>
+
+                <FormField
+                  label={t("addCard.installmentPlanLabel")}
+                  hint={t("addCard.installmentPlanHint")}
+                >
+                  <input
+                    type="checkbox"
+                    checked={installmentPlanAvailable}
+                    onChange={(e) => setInstallmentPlanAvailable(e.target.checked)}
+                  />
+                </FormField>
+              </>
+            )}
 
             <FormField label={t("addCard.dayCountLabel")} hint={t("addCard.dayCountHint")}>
               <select value={dayCountBasis} onChange={(e) => setDayCountBasis(e.target.value)}>

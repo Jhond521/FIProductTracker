@@ -10,16 +10,24 @@ export interface FinancialProduct {
   market: string;
   institution_name: string;
   credit_limit: number;
-  ea_rate: number;
+  ea_rate: number | null;
   day_count_basis: number;
+  apr: number | null;
+  penalty_rate: number | null;
+  min_payment_flat_floor: number | null;
+  installment_plan_available: boolean;
 }
 
 export interface FinancialProductCreate {
   market?: string;
   institution_name: string;
   credit_limit: number;
-  ea_rate: number;
+  ea_rate?: number | null;
   day_count_basis?: number;
+  apr?: number | null;
+  penalty_rate?: number | null;
+  min_payment_flat_floor?: number | null;
+  installment_plan_available?: boolean;
 }
 
 export interface FinancialProductUpdate {
@@ -27,6 +35,10 @@ export interface FinancialProductUpdate {
   credit_limit?: number;
   ea_rate?: number;
   day_count_basis?: number;
+  apr?: number;
+  penalty_rate?: number;
+  min_payment_flat_floor?: number;
+  installment_plan_available?: boolean;
 }
 
 export interface Purchase {

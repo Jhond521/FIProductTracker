@@ -7,7 +7,7 @@ import type { FinancialProduct, Purchase } from "../api/types";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { StatusBanner } from "../components/StatusBanner";
-import { formatCOP, formatPercent } from "../lib/format";
+import { formatCOP, formatPercent, formatUSD } from "../lib/format";
 import "./Dashboard.css";
 
 interface CardWithPurchases extends FinancialProduct {
@@ -95,11 +95,15 @@ export function Dashboard() {
             <div className="product-card-header">
               <div>
                 <h3>{card.institution_name}</h3>
-                <span className="product-card-market">{t("dashboard.market")}</span>
+                <span className="product-card-market">
+                  {card.market === "US" ? t("dashboard.marketUs") : t("dashboard.marketCo")}
+                </span>
               </div>
               <div className="product-card-actions">
                 <span className="product-card-rate">
-                  {t("dashboard.eaRateSuffix", { rate: formatPercent(card.ea_rate) })}
+                  {card.market === "US"
+                    ? t("dashboard.aprSuffix", { rate: formatPercent(card.apr ?? 0) })
+                    : t("dashboard.eaRateSuffix", { rate: formatPercent(card.ea_rate ?? 0) })}
                 </span>
                 <Link to={`/cards/${card.id}/edit`} className="product-card-add-purchase">
                   {t("dashboard.editCard")}
@@ -109,7 +113,10 @@ export function Dashboard() {
 
             <div className="product-card-meta">
               <span>
-                {t("dashboard.creditLimit")} <strong>{formatCOP(card.credit_limit)}</strong>
+                {t("dashboard.creditLimit")}{" "}
+                <strong>
+                  {card.market === "US" ? formatUSD(card.credit_limit) : formatCOP(card.credit_limit)}
+                </strong>
               </span>
               <span className="product-card-daycount">
                 {t("dashboard.dayCountBasis", { days: card.day_count_basis })}
@@ -141,7 +148,9 @@ export function Dashboard() {
                           {purchase.n_installments}{" "}
                           {t("dashboard.installmentUnit", { count: purchase.n_installments })}
                         </span>
-                        <span className="purchase-row-amount">{formatCOP(purchase.amount)}</span>
+                        <span className="purchase-row-amount">
+                          {purchase.currency === "USD" ? formatUSD(purchase.amount) : formatCOP(purchase.amount)}
+                        </span>
                       </Link>
                     </li>
                   ))}
