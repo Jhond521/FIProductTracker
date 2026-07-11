@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { productsApi } from "../api/products";
 import { ApiError } from "../api/client";
 import type { FinancialProduct, Purchase } from "../api/types";
@@ -14,6 +15,7 @@ interface CardWithPurchases extends FinancialProduct {
 }
 
 export function Dashboard() {
+  const { t } = useTranslation();
   const [cards, setCards] = useState<CardWithPurchases[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export function Dashboard() {
         if (!cancelled) setCards(withPurchases);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof ApiError ? String(err.message) : "Could not load your cards.");
+          setError(err instanceof ApiError ? String(err.message) : t("dashboard.loadError"));
         }
       }
     }
@@ -42,7 +44,7 @@ export function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const totalCreditLimit = cards?.reduce((sum, c) => sum + c.credit_limit, 0) ?? 0;
 
@@ -50,11 +52,11 @@ export function Dashboard() {
     <div>
       <div className="dashboard-header">
         <div>
-          <h1>Dashboard</h1>
-          <p className="dashboard-subtitle">Your cards, at a glance</p>
+          <h1>{t("dashboard.title")}</h1>
+          <p className="dashboard-subtitle">{t("dashboard.subtitle")}</p>
         </div>
         <Link to="/cards/new">
-          <Button>+ Add card</Button>
+          <Button>{t("dashboard.addCard")}</Button>
         </Link>
       </div>
 
@@ -62,25 +64,27 @@ export function Dashboard() {
         <div className="dashboard-stats">
           <div className="dashboard-stat">
             <span className="dashboard-stat-value">{cards.length}</span>
-            <span className="dashboard-stat-label">{cards.length === 1 ? "card" : "cards"}</span>
+            <span className="dashboard-stat-label">
+              {t("dashboard.cardCount", { count: cards.length })}
+            </span>
           </div>
           <div className="dashboard-stat">
             <span className="dashboard-stat-value">{formatCOP(totalCreditLimit)}</span>
-            <span className="dashboard-stat-label">total credit limit</span>
+            <span className="dashboard-stat-label">{t("dashboard.totalCreditLimit")}</span>
           </div>
         </div>
       )}
 
       {error && <StatusBanner kind="error">{error}</StatusBanner>}
 
-      {!cards && !error && <StatusBanner kind="loading">Loading your cards…</StatusBanner>}
+      {!cards && !error && <StatusBanner kind="loading">{t("dashboard.loading")}</StatusBanner>}
 
       {cards && cards.length === 0 && (
         <Card className="dashboard-empty">
-          <h3>No cards yet</h3>
-          <p className="dashboard-subtitle">Add your first card to see its real cost breakdown.</p>
+          <h3>{t("dashboard.emptyTitle")}</h3>
+          <p className="dashboard-subtitle">{t("dashboard.emptyBody")}</p>
           <Link to="/cards/new">
-            <Button>+ Add your first card</Button>
+            <Button>{t("dashboard.addFirstCard")}</Button>
           </Link>
         </Card>
       )}
@@ -91,28 +95,32 @@ export function Dashboard() {
             <div className="product-card-header">
               <div>
                 <h3>{card.institution_name}</h3>
-                <span className="product-card-market">Colombia</span>
+                <span className="product-card-market">{t("dashboard.market")}</span>
               </div>
-              <span className="product-card-rate">{formatPercent(card.ea_rate)} EA</span>
+              <span className="product-card-rate">
+                {t("dashboard.eaRateSuffix", { rate: formatPercent(card.ea_rate) })}
+              </span>
             </div>
 
             <div className="product-card-meta">
               <span>
-                Credit limit <strong>{formatCOP(card.credit_limit)}</strong>
+                {t("dashboard.creditLimit")} <strong>{formatCOP(card.credit_limit)}</strong>
               </span>
-              <span className="product-card-daycount">{card.day_count_basis}-day basis</span>
+              <span className="product-card-daycount">
+                {t("dashboard.dayCountBasis", { days: card.day_count_basis })}
+              </span>
             </div>
 
             <div className="product-card-purchases">
               <div className="product-card-purchases-header">
-                <span>Purchases</span>
+                <span>{t("dashboard.purchases")}</span>
                 <Link to={`/cards/${card.id}/purchases/new`} className="product-card-add-purchase">
-                  + Add purchase
+                  {t("dashboard.addPurchase")}
                 </Link>
               </div>
 
               {card.purchases.length === 0 ? (
-                <p className="dashboard-subtitle">No purchases yet.</p>
+                <p className="dashboard-subtitle">{t("dashboard.noPurchases")}</p>
               ) : (
                 <ul className="product-card-purchase-list">
                   {card.purchases.map((purchase) => (
@@ -122,11 +130,11 @@ export function Dashboard() {
                         className="purchase-row"
                       >
                         <span className="purchase-row-desc">
-                          {purchase.description || "Purchase"}
+                          {purchase.description || t("common.purchaseFallback")}
                         </span>
                         <span className="purchase-row-installments">
                           {purchase.n_installments}{" "}
-                          {purchase.n_installments === 1 ? "cuota" : "cuotas"}
+                          {t("dashboard.installmentUnit", { count: purchase.n_installments })}
                         </span>
                         <span className="purchase-row-amount">{formatCOP(purchase.amount)}</span>
                       </Link>

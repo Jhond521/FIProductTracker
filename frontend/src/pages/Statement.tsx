@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { productsApi } from "../api/products";
 import { ApiError } from "../api/client";
 import type { FinancialProduct, Purchase, PurchaseSchedule } from "../api/types";
@@ -10,6 +11,7 @@ import "./Statement.css";
 
 export function Statement() {
   const { productId, purchaseId } = useParams<{ productId: string; purchaseId: string }>();
+  const { t } = useTranslation();
 
   const [product, setProduct] = useState<FinancialProduct | null>(null);
   const [purchase, setPurchase] = useState<Purchase | null>(null);
@@ -32,7 +34,7 @@ export function Statement() {
 
         const matchingPurchase = purchases.find((p) => p.id === purchaseId);
         if (!matchingPurchase) {
-          setError("This purchase could not be found.");
+          setError(t("statement.notFound"));
           return;
         }
 
@@ -43,8 +45,8 @@ export function Statement() {
         if (!cancelled) {
           setError(
             err instanceof ApiError && err.status === 404
-              ? "This purchase could not be found."
-              : "Could not load the statement.",
+              ? t("statement.notFound")
+              : t("statement.loadError"),
           );
         }
       }
@@ -54,16 +56,16 @@ export function Statement() {
     return () => {
       cancelled = true;
     };
-  }, [productId, purchaseId]);
+  }, [productId, purchaseId, t]);
 
   if (error) {
     return (
       <div>
-        <h1>Statement</h1>
+        <h1>{t("statement.title")}</h1>
         <StatusBanner kind="error">{error}</StatusBanner>
         <p style={{ marginTop: 16 }}>
           <Link to="/" style={{ color: "var(--color-primary)", fontWeight: 600 }}>
-            ← Back to dashboard
+            {t("common.backToDashboard")}
           </Link>
         </p>
       </div>
@@ -73,8 +75,8 @@ export function Statement() {
   if (!product || !purchase || !schedule) {
     return (
       <div>
-        <h1>Statement</h1>
-        <StatusBanner kind="loading">Loading statement…</StatusBanner>
+        <h1>{t("statement.title")}</h1>
+        <StatusBanner kind="loading">{t("statement.loading")}</StatusBanner>
       </div>
     );
   }
@@ -82,22 +84,25 @@ export function Statement() {
   return (
     <div>
       <div className="statement-header">
-        <h1>{purchase.description || "Purchase"}</h1>
+        <h1>{purchase.description || t("common.purchaseFallback")}</h1>
         <p className="statement-subtitle">
-          {product.institution_name} · {formatDate(purchase.purchase_date)} ·{" "}
-          {formatCOP(purchase.amount)}
+          {t("statement.subtitle", {
+            institution: product.institution_name,
+            date: formatDate(purchase.purchase_date),
+            amount: formatCOP(purchase.amount),
+          })}
         </p>
       </div>
 
       <div className="statement-headline">
         <Card className="statement-stat">
-          <span className="statement-stat-label">Total interest cost</span>
+          <span className="statement-stat-label">{t("statement.totalInterestCost")}</span>
           <span className="statement-stat-value statement-stat-terracotta">
             {formatCOP(schedule.total_interest_cost)}
           </span>
         </Card>
         <Card className="statement-stat">
-          <span className="statement-stat-label">Real annualized cost</span>
+          <span className="statement-stat-label">{t("statement.realAnnualizedCost")}</span>
           <span className="statement-stat-value statement-stat-primary">
             {formatPercent(schedule.real_annualized_cost)}
           </span>
@@ -106,15 +111,15 @@ export function Statement() {
 
       <Card className="statement-table-card">
         <div className="statement-table-header">
-          <h3>Installment breakdown</h3>
+          <h3>{t("statement.breakdown")}</h3>
           <div className="statement-legend">
             <span className="statement-legend-item">
               <span className="statement-legend-swatch statement-legend-principal" />
-              Principal
+              {t("statement.principal")}
             </span>
             <span className="statement-legend-item">
               <span className="statement-legend-swatch statement-legend-interest" />
-              Interest
+              {t("statement.interest")}
             </span>
           </div>
         </div>
@@ -123,12 +128,12 @@ export function Statement() {
           <table className="statement-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Payment</th>
-                <th>Split</th>
-                <th className="statement-table-num">Principal</th>
-                <th className="statement-table-num">Interest</th>
-                <th className="statement-table-num">Balance</th>
+                <th>{t("statement.columnNumber")}</th>
+                <th>{t("statement.columnPayment")}</th>
+                <th>{t("statement.columnSplit")}</th>
+                <th className="statement-table-num">{t("statement.principal")}</th>
+                <th className="statement-table-num">{t("statement.interest")}</th>
+                <th className="statement-table-num">{t("statement.columnBalance")}</th>
               </tr>
             </thead>
             <tbody>

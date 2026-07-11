@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../lib/auth/useAuth";
 import "./Layout.css";
 
@@ -6,7 +7,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { t, i18n } = useTranslation();
   const isDashboard = location.pathname === "/";
+  const isSpanish = i18n.language.startsWith("es");
 
   async function handleLogout() {
     await logout();
@@ -18,17 +21,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="layout-header">
         <Link to="/" className="layout-brand">
           <span className="layout-brand-mark">CT</span>
-          <span className="layout-brand-text">Credit Tracker</span>
+          <span className="layout-brand-text">{t("login.brand")}</span>
         </Link>
         <nav className="layout-nav">
           {!isDashboard && (
             <Link to="/" className="layout-nav-link">
-              ← Dashboard
+              {t("nav.dashboard")}
             </Link>
           )}
-          <span className="layout-lang" title="Language switching coming soon">
-            EN
-          </span>
+          <button
+            type="button"
+            className="layout-lang"
+            title={t("nav.language")}
+            onClick={() => i18n.changeLanguage(isSpanish ? "en" : "es")}
+          >
+            {isSpanish ? "ES" : "EN"}
+          </button>
           {user && (
             <div className="layout-user">
               {user.picture_url && (
@@ -38,7 +46,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {user.name}
               </span>
               <button className="layout-logout" onClick={handleLogout}>
-                Log out
+                {t("nav.logout")}
               </button>
             </div>
           )}
