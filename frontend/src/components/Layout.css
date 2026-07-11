@@ -113,7 +113,22 @@
 
 @media (max-width: 640px) {
   .layout-header {
+    flex-wrap: wrap;
+    row-gap: 12px;
     padding: 16px 20px;
+  }
+  .layout-nav {
+    width: 100%;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .layout-user {
+    padding-left: 0;
+    border-left: none;
+    margin-left: auto;
+  }
+  .layout-user-name {
+    max-width: 100px;
   }
   .layout-main {
     padding: 28px 20px 60px;
