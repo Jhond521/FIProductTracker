@@ -113,7 +113,27 @@
 
 @media (max-width: 640px) {
   .layout-header {
-    padding: 16px 20px;
+    padding: 16px;
+  }
+  .layout-brand-text {
+    display: none;
+  }
+  .layout-nav {
+    gap: 10px;
+  }
+  .layout-nav-link {
+    padding: 6px 10px;
+  }
+  .layout-lang {
+    display: none;
+  }
+  .layout-user {
+    padding-left: 0;
+    border-left: none;
+    gap: 8px;
+  }
+  .layout-user-name {
+    max-width: 56px;
   }
   .layout-main {
     padding: 28px 20px 60px;

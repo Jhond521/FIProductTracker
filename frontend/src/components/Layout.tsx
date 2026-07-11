@@ -18,7 +18,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="layout-header">
         <Link to="/" className="layout-brand">
           <span className="layout-brand-mark">CT</span>
-          <span>Credit Tracker</span>
+          <span className="layout-brand-text">Credit Tracker</span>
         </Link>
         <nav className="layout-nav">
           {!isDashboard && (
@@ -34,7 +34,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {user.picture_url && (
                 <img src={user.picture_url} alt="" className="layout-user-avatar" />
               )}
-              <span className="layout-user-name">{user.name}</span>
+              <span className="layout-user-name" title={user.name}>
+                {user.name}
+              </span>
               <button className="layout-logout" onClick={handleLogout}>
                 Log out
               </button>
