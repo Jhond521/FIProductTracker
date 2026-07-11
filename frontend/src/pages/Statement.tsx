@@ -84,7 +84,15 @@ export function Statement() {
   return (
     <div>
       <div className="statement-header">
-        <h1>{purchase.description || t("common.purchaseFallback")}</h1>
+        <div className="statement-header-top">
+          <h1>{purchase.description || t("common.purchaseFallback")}</h1>
+          <Link
+            to={`/cards/${productId}/purchases/${purchaseId}/edit`}
+            className="statement-edit-link"
+          >
+            {t("statement.editPurchase")}
+          </Link>
+        </div>
         <p className="statement-subtitle">
           {t("statement.subtitle", {
             institution: product.institution_name,

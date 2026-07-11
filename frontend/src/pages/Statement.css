@@ -2,6 +2,25 @@
   margin-bottom: 24px;
 }
 
+.statement-header-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.statement-edit-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.statement-edit-link:hover {
+  text-decoration: underline;
+}
+
 .statement-subtitle {
   color: var(--color-text-muted);
   margin-top: 6px;

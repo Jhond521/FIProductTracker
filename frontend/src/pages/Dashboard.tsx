@@ -97,9 +97,14 @@ export function Dashboard() {
                 <h3>{card.institution_name}</h3>
                 <span className="product-card-market">{t("dashboard.market")}</span>
               </div>
-              <span className="product-card-rate">
-                {t("dashboard.eaRateSuffix", { rate: formatPercent(card.ea_rate) })}
-              </span>
+              <div className="product-card-actions">
+                <span className="product-card-rate">
+                  {t("dashboard.eaRateSuffix", { rate: formatPercent(card.ea_rate) })}
+                </span>
+                <Link to={`/cards/${card.id}/edit`} className="product-card-add-purchase">
+                  {t("dashboard.editCard")}
+                </Link>
+              </div>
             </div>
 
             <div className="product-card-meta">

@@ -159,6 +159,210 @@ async def test_products_require_authentication(async_client):
     assert resp.status_code == 401
 
 
+async def test_update_product_fields(authenticated_client):
+    product_resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "CO",
+            "institution_name": "Banco de Prueba",
+            "credit_limit": 5_000_000.0,
+            "ea_rate": 0.36,
+            "day_count_basis": 365,
+        },
+    )
+    product = product_resp.json()
+
+    update_resp = await authenticated_client.patch(
+        f"/api/v1/internal/products/{product['id']}",
+        json={"institution_name": "Banco Actualizado", "ea_rate": 0.42},
+    )
+    assert update_resp.status_code == 200
+    updated = update_resp.json()
+    assert updated["institution_name"] == "Banco Actualizado"
+    assert updated["ea_rate"] == 0.42
+    # Untouched fields are preserved
+    assert updated["credit_limit"] == 5_000_000.0
+    assert updated["market"] == "CO"
+
+
+async def test_update_product_rejects_market_change(authenticated_client):
+    product_resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "CO",
+            "institution_name": "Banco de Prueba",
+            "credit_limit": 5_000_000.0,
+            "ea_rate": 0.36,
+            "day_count_basis": 365,
+        },
+    )
+    product = product_resp.json()
+
+    resp = await authenticated_client.patch(
+        f"/api/v1/internal/products/{product['id']}",
+        json={"market": "US"},
+    )
+    assert resp.status_code == 422
+
+
+async def test_update_unknown_product_returns_404(authenticated_client):
+    resp = await authenticated_client.patch(
+        f"/api/v1/internal/products/{uuid.uuid4()}",
+        json={"institution_name": "Doesn't matter"},
+    )
+    assert resp.status_code == 404
+
+
+async def test_update_purchase_fields_and_recalculates_schedule(authenticated_client):
+    product_resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "CO",
+            "institution_name": "Banco de Prueba",
+            "credit_limit": 5_000_000.0,
+            "ea_rate": 0.36,
+            "day_count_basis": 365,
+        },
+    )
+    product = product_resp.json()
+
+    purchase_resp = await authenticated_client.post(
+        f"/api/v1/internal/products/{product['id']}/purchases",
+        json={
+            "amount": 600_000.0,
+            "currency": "COP",
+            "purchase_date": "2026-07-01",
+            "n_installments": 6,
+            "interest_free_promo": False,
+            "description": "Electrodomestico",
+        },
+    )
+    purchase = purchase_resp.json()
+
+    original_schedule = (
+        await authenticated_client.get(
+            f"/api/v1/internal/products/{product['id']}/purchases/{purchase['id']}/schedule"
+        )
+    ).json()
+
+    update_resp = await authenticated_client.patch(
+        f"/api/v1/internal/products/{product['id']}/purchases/{purchase['id']}",
+        json={"n_installments": 12, "description": "Electrodomestico grande"},
+    )
+    assert update_resp.status_code == 200
+    updated = update_resp.json()
+    assert updated["n_installments"] == 12
+    assert updated["description"] == "Electrodomestico grande"
+    assert updated["amount"] == 600_000.0
+
+    new_schedule = (
+        await authenticated_client.get(
+            f"/api/v1/internal/products/{product['id']}/purchases/{purchase['id']}/schedule"
+        )
+    ).json()
+    assert len(new_schedule["schedule"]) == 12
+    assert new_schedule["total_interest_cost"] != original_schedule["total_interest_cost"]
+
+
+async def test_update_purchase_can_clear_optional_description(authenticated_client):
+    product_resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "CO",
+            "institution_name": "Banco de Prueba",
+            "credit_limit": 5_000_000.0,
+            "ea_rate": 0.36,
+            "day_count_basis": 365,
+        },
+    )
+    product = product_resp.json()
+
+    purchase_resp = await authenticated_client.post(
+        f"/api/v1/internal/products/{product['id']}/purchases",
+        json={
+            "amount": 100_000.0,
+            "currency": "COP",
+            "purchase_date": "2026-07-01",
+            "n_installments": 1,
+            "description": "Something",
+        },
+    )
+    purchase = purchase_resp.json()
+
+    update_resp = await authenticated_client.patch(
+        f"/api/v1/internal/products/{product['id']}/purchases/{purchase['id']}",
+        json={"description": None},
+    )
+    assert update_resp.status_code == 200
+    assert update_resp.json()["description"] is None
+
+
+async def test_update_unknown_purchase_returns_404(authenticated_client):
+    product_resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "CO",
+            "institution_name": "Banco de Prueba",
+            "credit_limit": 5_000_000.0,
+            "ea_rate": 0.36,
+            "day_count_basis": 365,
+        },
+    )
+    product = product_resp.json()
+
+    resp = await authenticated_client.patch(
+        f"/api/v1/internal/products/{product['id']}/purchases/{uuid.uuid4()}",
+        json={"amount": 1.0},
+    )
+    assert resp.status_code == 404
+
+
+async def test_user_cannot_update_another_users_product_or_purchase(authenticated_client):
+    product_resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "CO",
+            "institution_name": "Banco de Prueba",
+            "credit_limit": 5_000_000.0,
+            "ea_rate": 0.36,
+            "day_count_basis": 365,
+        },
+    )
+    product = product_resp.json()
+
+    purchase_resp = await authenticated_client.post(
+        f"/api/v1/internal/products/{product['id']}/purchases",
+        json={
+            "amount": 100_000.0,
+            "currency": "COP",
+            "purchase_date": "2026-07-01",
+            "n_installments": 1,
+        },
+    )
+    purchase = purchase_resp.json()
+
+    other_user = await create_test_user(
+        authenticated_client.session_factory, email="other-edit@example.com"
+    )
+    other_token = create_session_token(other_user.id)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as other_client:
+        other_client.cookies.set(settings.session_cookie_name, other_token)
+
+        resp = await other_client.patch(
+            f"/api/v1/internal/products/{product['id']}",
+            json={"institution_name": "Hijacked"},
+        )
+        assert resp.status_code == 404
+
+        resp = await other_client.patch(
+            f"/api/v1/internal/products/{product['id']}/purchases/{purchase['id']}",
+            json={"amount": 1.0},
+        )
+        assert resp.status_code == 404
+
+
 async def test_user_cannot_access_another_users_product(authenticated_client):
     product_resp = await authenticated_client.post(
         "/api/v1/internal/products",

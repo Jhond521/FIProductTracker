@@ -22,6 +22,13 @@ export interface FinancialProductCreate {
   day_count_basis?: number;
 }
 
+export interface FinancialProductUpdate {
+  institution_name?: string;
+  credit_limit?: number;
+  ea_rate?: number;
+  day_count_basis?: number;
+}
+
 export interface Purchase {
   id: string;
   product_id: string;
@@ -37,6 +44,15 @@ export interface PurchaseCreate {
   amount: number;
   currency?: string;
   purchase_date: string;
+  n_installments?: number;
+  interest_free_promo?: boolean;
+  description?: string | null;
+}
+
+export interface PurchaseUpdate {
+  amount?: number;
+  currency?: string;
+  purchase_date?: string;
   n_installments?: number;
   interest_free_promo?: boolean;
   description?: string | null;
