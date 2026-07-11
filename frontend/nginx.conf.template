@@ -4,11 +4,19 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # Railway's internal DNS reassigns the backend's IP on every redeploy.
+    # A static (non-variable) proxy_pass resolves the hostname once at nginx
+    # startup and caches it for the worker's lifetime, so it goes on
+    # proxying to a dead IP after the backend restarts. Resolving through a
+    # variable forces nginx to re-resolve on this ttl instead.
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+
     # Proxying the API through this same origin (rather than the browser
     # calling the backend's own host directly) keeps auth same-site, so the
     # session cookie isn't subject to third-party cookie blocking.
     location /api/ {
-        proxy_pass ${BACKEND_INTERNAL_URL}/api/;
+        set $backend_upstream ${BACKEND_INTERNAL_URL};
+        proxy_pass $backend_upstream/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

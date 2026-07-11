@@ -18,5 +18,8 @@ FROM nginx:alpine AS runtime
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 ENV BACKEND_INTERNAL_URL=http://localhost:8000
+# Enables nginx's built-in 15-local-resolvers.envsh, which exports
+# $NGINX_LOCAL_RESOLVERS from /etc/resolv.conf for the `resolver` directive.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 
 EXPOSE 80
