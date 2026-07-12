@@ -12,6 +12,14 @@ export function formatCOP(amount: number): string {
   return `$${cop.format(amount)}`;
 }
 
+export function formatUSD(amount: number): string {
+  const usd = new Intl.NumberFormat(currentLocale(), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return `US$${usd.format(amount)}`;
+}
+
 export function formatPercent(fraction: number): string {
   const percent = new Intl.NumberFormat(currentLocale(), {
     style: "percent",

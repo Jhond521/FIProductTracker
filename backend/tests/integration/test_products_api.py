@@ -363,6 +363,72 @@ async def test_user_cannot_update_another_users_product_or_purchase(authenticate
         assert resp.status_code == 404
 
 
+async def test_create_us_product_requires_apr(authenticated_client):
+    resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "US",
+            "institution_name": "Chase",
+            "credit_limit": 10_000.0,
+            "day_count_basis": 365,
+        },
+    )
+    assert resp.status_code == 422
+
+
+async def test_create_us_product_with_apr_and_defaults(authenticated_client):
+    resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "US",
+            "institution_name": "Chase",
+            "credit_limit": 10_000.0,
+            "day_count_basis": 365,
+            "apr": 0.24,
+            "penalty_rate": 0.29,
+            "installment_plan_available": True,
+        },
+    )
+    assert resp.status_code == 201
+    product = resp.json()
+    assert product["market"] == "US"
+    assert product["apr"] == 0.24
+    assert product["penalty_rate"] == 0.29
+    assert product["installment_plan_available"] is True
+    # Flat floor defaults to the PRD Section 10 reference value when unset
+    assert product["min_payment_flat_floor"] == 25.0
+    assert product["ea_rate"] is None
+
+
+async def test_purchase_schedule_not_available_for_us_market_product(authenticated_client):
+    product_resp = await authenticated_client.post(
+        "/api/v1/internal/products",
+        json={
+            "market": "US",
+            "institution_name": "Chase",
+            "credit_limit": 10_000.0,
+            "day_count_basis": 365,
+            "apr": 0.24,
+        },
+    )
+    product = product_resp.json()
+
+    purchase_resp = await authenticated_client.post(
+        f"/api/v1/internal/products/{product['id']}/purchases",
+        json={
+            "amount": 500.0,
+            "currency": "USD",
+            "purchase_date": "2026-07-01",
+        },
+    )
+    purchase = purchase_resp.json()
+
+    resp = await authenticated_client.get(
+        f"/api/v1/internal/products/{product['id']}/purchases/{purchase['id']}/schedule"
+    )
+    assert resp.status_code == 400
+
+
 async def test_user_cannot_access_another_users_product(authenticated_client):
     product_resp = await authenticated_client.post(
         "/api/v1/internal/products",
