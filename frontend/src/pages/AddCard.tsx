@@ -21,6 +21,8 @@ export function AddCard() {
   const [penaltyRatePercent, setPenaltyRatePercent] = useState("");
   const [minPaymentFlatFloor, setMinPaymentFlatFloor] = useState("");
   const [installmentPlanAvailable, setInstallmentPlanAvailable] = useState(false);
+  const [statementCutoffDay, setStatementCutoffDay] = useState("1");
+  const [paymentDueDay, setPaymentDueDay] = useState("15");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,8 @@ export function AddCard() {
         institution_name: institutionName,
         credit_limit: Number(creditLimit),
         day_count_basis: Number(dayCountBasis),
+        statement_cutoff_day: Number(statementCutoffDay),
+        payment_due_day: Number(paymentDueDay),
         ...(market === "CO"
           ? { ea_rate: Number(eaRatePercent) / 100 }
           : {
@@ -160,6 +164,30 @@ export function AddCard() {
               <option value="365">{t("addCard.days365")}</option>
               <option value="360">{t("addCard.days360")}</option>
             </select>
+          </FormField>
+
+          <FormField label={t("addCard.cutoffDayLabel")} hint={t("addCard.cutoffDayHint")}>
+            <input
+              type="number"
+              min={1}
+              max={28}
+              step="1"
+              value={statementCutoffDay}
+              onChange={(e) => setStatementCutoffDay(e.target.value)}
+              required
+            />
+          </FormField>
+
+          <FormField label={t("addCard.dueDayLabel")} hint={t("addCard.dueDayHint")}>
+            <input
+              type="number"
+              min={1}
+              max={28}
+              step="1"
+              value={paymentDueDay}
+              onChange={(e) => setPaymentDueDay(e.target.value)}
+              required
+            />
           </FormField>
 
           {error && <StatusBanner kind="error">{error}</StatusBanner>}

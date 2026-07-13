@@ -21,6 +21,12 @@ class FinancialProductCreate(BaseModel):
     installment_plan_available: bool = Field(
         default=False, description="US: whether a Plan It/Flex Pay style feature is offered"
     )
+    statement_cutoff_day: int = Field(
+        default=1, ge=1, le=28, description="Fecha de corte: day of month the statement closes"
+    )
+    payment_due_day: int = Field(
+        default=15, ge=1, le=28, description="Fecha de pago: day of month payment is due"
+    )
 
     @model_validator(mode="after")
     def _validate_market_specific_fields(self) -> "FinancialProductCreate":
@@ -54,6 +60,8 @@ class FinancialProductUpdate(BaseModel):
     penalty_rate: float | None = Field(default=None, ge=0)
     min_payment_flat_floor: float | None = Field(default=None, ge=0)
     installment_plan_available: bool | None = None
+    statement_cutoff_day: int | None = Field(default=None, ge=1, le=28)
+    payment_due_day: int | None = Field(default=None, ge=1, le=28)
 
 
 class PurchaseCreate(BaseModel):
@@ -95,3 +103,24 @@ class PurchaseScheduleRead(BaseModel):
     total_interest_cost: float
     real_annualized_cost: float
     schedule: list[InstallmentEntryRead]
+
+
+class PurchaseContributionRead(BaseModel):
+    purchase_id: uuid.UUID
+    description: str | None
+    principal_portion: float
+    interest_portion: float
+
+
+class StatementPeriodSummaryRead(BaseModel):
+    period_start: date
+    period_end: date
+    due_date: date
+    total_principal: float
+    total_interest: float
+    total_fees: float
+    total_due: float
+
+
+class StatementPeriodDetailRead(StatementPeriodSummaryRead):
+    contributions: list[PurchaseContributionRead]

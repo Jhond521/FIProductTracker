@@ -16,6 +16,8 @@ export interface FinancialProduct {
   penalty_rate: number | null;
   min_payment_flat_floor: number | null;
   installment_plan_available: boolean;
+  statement_cutoff_day: number;
+  payment_due_day: number;
 }
 
 export interface FinancialProductCreate {
@@ -28,6 +30,8 @@ export interface FinancialProductCreate {
   penalty_rate?: number | null;
   min_payment_flat_floor?: number | null;
   installment_plan_available?: boolean;
+  statement_cutoff_day?: number;
+  payment_due_day?: number;
 }
 
 export interface FinancialProductUpdate {
@@ -39,6 +43,8 @@ export interface FinancialProductUpdate {
   penalty_rate?: number;
   min_payment_flat_floor?: number;
   installment_plan_available?: boolean;
+  statement_cutoff_day?: number;
+  payment_due_day?: number;
 }
 
 export interface Purchase {
@@ -83,4 +89,25 @@ export interface PurchaseSchedule {
   total_interest_cost: number;
   real_annualized_cost: number;
   schedule: InstallmentEntry[];
+}
+
+export interface PurchaseContribution {
+  purchase_id: string;
+  description: string | null;
+  principal_portion: number;
+  interest_portion: number;
+}
+
+export interface StatementPeriodSummary {
+  period_start: string;
+  period_end: string;
+  due_date: string;
+  total_principal: number;
+  total_interest: number;
+  total_fees: number;
+  total_due: number;
+}
+
+export interface StatementPeriodDetail extends StatementPeriodSummary {
+  contributions: PurchaseContribution[];
 }

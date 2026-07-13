@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -12,6 +13,11 @@ from app.calculations.amortization import (
     total_interest_cost,
 )
 from app.calculations.rates import ea_to_monthly_rate
+from app.calculations.statement_periods import (
+    PeriodPurchaseInput,
+    build_statement_period,
+    list_statement_periods,
+)
 from app.core.db import get_db
 from app.products.models import FinancialProduct, Purchase
 from app.products.schemas import (
@@ -19,10 +25,13 @@ from app.products.schemas import (
     FinancialProductRead,
     FinancialProductUpdate,
     InstallmentEntryRead,
+    PurchaseContributionRead,
     PurchaseCreate,
     PurchaseRead,
     PurchaseScheduleRead,
     PurchaseUpdate,
+    StatementPeriodDetailRead,
+    StatementPeriodSummaryRead,
 )
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -179,4 +188,86 @@ async def get_purchase_schedule(
         total_interest_cost=total_interest_cost(schedule),
         real_annualized_cost=real_annualized_cost(float(purchase.amount), schedule),
         schedule=[InstallmentEntryRead(**entry.__dict__) for entry in schedule],
+    )
+
+
+async def _period_purchase_inputs(
+    product_id: uuid.UUID, db: AsyncSession
+) -> list[PeriodPurchaseInput]:
+    result = await db.execute(select(Purchase).where(Purchase.product_id == product_id))
+    return [
+        PeriodPurchaseInput(
+            purchase_id=purchase.id,
+            amount=float(purchase.amount),
+            purchase_date=purchase.purchase_date,
+            n_installments=purchase.n_installments,
+            interest_free_promo=purchase.interest_free_promo,
+            description=purchase.description,
+        )
+        for purchase in result.scalars().all()
+    ]
+
+
+@router.get("/{product_id}/statements", response_model=list[StatementPeriodSummaryRead])
+async def list_statements(
+    product_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Every statement period with activity, newest first (PRD Section 7.5)."""
+    product = await _get_owned_product(product_id, current_user, db)
+    purchase_inputs = await _period_purchase_inputs(product_id, db)
+
+    periods = list_statement_periods(
+        market=product.market,
+        cutoff_day=product.statement_cutoff_day,
+        payment_due_day=product.payment_due_day,
+        ea_rate=float(product.ea_rate) if product.ea_rate is not None else None,
+        apr=float(product.apr) if product.apr is not None else None,
+        day_count_basis=product.day_count_basis,
+        purchases=purchase_inputs,
+        as_of=date.today(),
+    )
+    return [StatementPeriodSummaryRead(**statement.__dict__) for statement in periods]
+
+
+@router.get(
+    "/{product_id}/statements/{period_end}", response_model=StatementPeriodDetailRead
+)
+async def get_statement_period(
+    product_id: uuid.UUID,
+    period_end: date,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Drill-down for one statement period: total due plus every
+    contributing purchase and its share (PRD Section 7.5)."""
+    product = await _get_owned_product(product_id, current_user, db)
+    purchase_inputs = await _period_purchase_inputs(product_id, db)
+
+    statement = build_statement_period(
+        market=product.market,
+        cutoff_day=product.statement_cutoff_day,
+        payment_due_day=product.payment_due_day,
+        ea_rate=float(product.ea_rate) if product.ea_rate is not None else None,
+        apr=float(product.apr) if product.apr is not None else None,
+        day_count_basis=product.day_count_basis,
+        purchases=purchase_inputs,
+        target_period_end=period_end,
+    )
+    if not statement.contributions and not statement.total_due:
+        raise HTTPException(status_code=404, detail="No statement activity for this period")
+
+    return StatementPeriodDetailRead(
+        period_start=statement.period_start,
+        period_end=statement.period_end,
+        due_date=statement.due_date,
+        total_principal=statement.total_principal,
+        total_interest=statement.total_interest,
+        total_fees=statement.total_fees,
+        total_due=statement.total_due,
+        contributions=[
+            PurchaseContributionRead(**contribution.__dict__)
+            for contribution in statement.contributions
+        ],
     )
