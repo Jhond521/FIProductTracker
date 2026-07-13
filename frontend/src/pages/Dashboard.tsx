@@ -202,16 +202,22 @@ export function Dashboard() {
                   {card.purchases.map((purchase) => (
                     <li key={purchase.id}>
                       <Link
-                        to={`/cards/${card.id}/purchases/${purchase.id}`}
+                        to={
+                          card.market === "CO"
+                            ? `/cards/${card.id}/purchases/${purchase.id}`
+                            : `/cards/${card.id}/statements`
+                        }
                         className="purchase-row"
                       >
                         <span className="purchase-row-desc">
                           {purchase.description || t("common.purchaseFallback")}
                         </span>
-                        <span className="purchase-row-installments">
-                          {purchase.n_installments}{" "}
-                          {t("dashboard.installmentUnit", { count: purchase.n_installments })}
-                        </span>
+                        {card.market === "CO" && (
+                          <span className="purchase-row-installments">
+                            {purchase.n_installments}{" "}
+                            {t("dashboard.installmentUnit", { count: purchase.n_installments })}
+                          </span>
+                        )}
                         <span className="purchase-row-amount">
                           {purchase.currency === "USD" ? formatUSD(purchase.amount) : formatCOP(purchase.amount)}
                         </span>
