@@ -17,14 +17,17 @@ from app.calculations.statement_periods import (
     PeriodPurchaseInput,
     build_statement_period,
     list_statement_periods,
+    outstanding_balance,
 )
 from app.core.db import get_db
 from app.products.models import FinancialProduct, Purchase
 from app.products.schemas import (
+    DashboardSummaryRead,
     FinancialProductCreate,
     FinancialProductRead,
     FinancialProductUpdate,
     InstallmentEntryRead,
+    MarketAggregateRead,
     PurchaseContributionRead,
     PurchaseCreate,
     PurchaseRead,
@@ -77,6 +80,79 @@ async def list_products(
         select(FinancialProduct).where(FinancialProduct.owner_id == current_user.id)
     )
     return result.scalars().all()
+
+
+@router.get("/dashboard-summary", response_model=DashboardSummaryRead)
+async def get_dashboard_summary(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Aggregate stats across all of the user's cards (PRD Section 7.2):
+    total balance, total current-cycle interest, and total fees, kept
+    separate per market since COP and USD can't be summed without an FX
+    rate this app doesn't have. Also flags the single highest-rate card,
+    comparing CO's EA against US's APR as rough percentage magnitudes."""
+    result = await db.execute(
+        select(FinancialProduct).where(FinancialProduct.owner_id == current_user.id)
+    )
+    products = result.scalars().all()
+    as_of = date.today()
+
+    totals = {
+        "CO": {"balance": 0.0, "interest": 0.0, "fees": 0.0},
+        "US": {"balance": 0.0, "interest": 0.0, "fees": 0.0},
+    }
+    highest_rate = -1.0
+    highest_cost_product_id: uuid.UUID | None = None
+
+    for product in products:
+        purchase_inputs = await _period_purchase_inputs(product.id, db)
+        ea_rate = float(product.ea_rate) if product.ea_rate is not None else None
+        apr = float(product.apr) if product.apr is not None else None
+
+        balance = outstanding_balance(
+            market=product.market,
+            cutoff_day=product.statement_cutoff_day,
+            payment_due_day=product.payment_due_day,
+            ea_rate=ea_rate,
+            purchases=purchase_inputs,
+            as_of=as_of,
+        )
+        periods = list_statement_periods(
+            market=product.market,
+            cutoff_day=product.statement_cutoff_day,
+            payment_due_day=product.payment_due_day,
+            ea_rate=ea_rate,
+            apr=apr,
+            day_count_basis=product.day_count_basis,
+            purchases=purchase_inputs,
+            as_of=as_of,
+        )
+        current_period = periods[0] if periods else None
+
+        bucket = totals[product.market]
+        bucket["balance"] += balance
+        bucket["interest"] += current_period.total_interest if current_period else 0.0
+        bucket["fees"] += current_period.total_fees if current_period else 0.0
+
+        rate = ea_rate if product.market == "CO" else apr
+        if rate is not None and rate > highest_rate:
+            highest_rate = rate
+            highest_cost_product_id = product.id
+
+    return DashboardSummaryRead(
+        co=MarketAggregateRead(
+            total_balance=round(totals["CO"]["balance"], 2),
+            total_interest=round(totals["CO"]["interest"], 2),
+            total_fees=round(totals["CO"]["fees"], 2),
+        ),
+        us=MarketAggregateRead(
+            total_balance=round(totals["US"]["balance"], 2),
+            total_interest=round(totals["US"]["interest"], 2),
+            total_fees=round(totals["US"]["fees"], 2),
+        ),
+        highest_cost_product_id=highest_cost_product_id,
+    )
 
 
 @router.get("/{product_id}", response_model=FinancialProductRead)

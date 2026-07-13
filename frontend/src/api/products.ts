@@ -1,5 +1,6 @@
 import { api } from "./client";
 import type {
+  DashboardSummary,
   FinancialProduct,
   FinancialProductCreate,
   FinancialProductUpdate,
@@ -33,4 +34,6 @@ export const productsApi = {
     api.get<StatementPeriodSummary[]>(`${BASE}/${productId}/statements`),
   getStatementPeriod: (productId: string, periodEnd: string) =>
     api.get<StatementPeriodDetail>(`${BASE}/${productId}/statements/${periodEnd}`),
+
+  getDashboardSummary: () => api.get<DashboardSummary>(`${BASE}/dashboard-summary`),
 };

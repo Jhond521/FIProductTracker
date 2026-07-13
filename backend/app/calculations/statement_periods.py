@@ -303,3 +303,74 @@ def list_statement_periods(
         period = period_shifted(period, 1, cutoff_day, payment_due_day)
 
     return sorted(periods, key=lambda s: s.period_end, reverse=True)
+
+
+def _co_outstanding_balance(
+    *,
+    cutoff_day: int,
+    payment_due_day: int,
+    ea_rate: float,
+    purchases: list[PeriodPurchaseInput],
+    as_of: date,
+) -> float:
+    """Sum of each purchase's remaining principal after its most recently
+    closed installment. A purchase whose first period hasn't closed yet
+    contributes its full amount (nothing billed against it so far). Note
+    this compares each installment's period_end against `as_of` directly,
+    not against the period containing `as_of` -- that period hasn't
+    closed yet, so its own installment (if any) isn't paid off either."""
+    rules = get_market_rules("CO")
+    total = 0.0
+
+    for purchase in purchases:
+        first_period = statement_period_containing(
+            purchase.purchase_date, cutoff_day, payment_due_day
+        )
+        schedule = rules.compute_interest(
+            principal=purchase.amount,
+            ea_rate=ea_rate,
+            n_installments=purchase.n_installments,
+            interest_free_promo=purchase.interest_free_promo,
+        )
+        remaining = purchase.amount
+        for i, entry in enumerate(schedule):
+            installment_period_end = period_shifted(
+                first_period, i, cutoff_day, payment_due_day
+            ).period_end
+            if installment_period_end <= as_of:
+                remaining = entry.remaining_balance
+            else:
+                break
+        total += remaining
+
+    return round(total, 2)
+
+
+def _us_outstanding_balance(*, purchases: list[PeriodPurchaseInput], as_of: date) -> float:
+    """No payment tracking yet, so every purchase made so far is still
+    outstanding -- the revolving balance is just the running sum."""
+    return round(sum(p.amount for p in purchases if p.purchase_date <= as_of), 2)
+
+
+def outstanding_balance(
+    *,
+    market: str,
+    cutoff_day: int,
+    payment_due_day: int,
+    ea_rate: float | None,
+    purchases: list[PeriodPurchaseInput],
+    as_of: date,
+) -> float:
+    """The card's current total balance owed, as of `as_of` (PRD Section 7.2
+    dashboard aggregate)."""
+    if market == "CO":
+        return _co_outstanding_balance(
+            cutoff_day=cutoff_day,
+            payment_due_day=payment_due_day,
+            ea_rate=ea_rate,
+            purchases=purchases,
+            as_of=as_of,
+        )
+    if market == "US":
+        return _us_outstanding_balance(purchases=purchases, as_of=as_of)
+    raise ValueError(f"Unknown market {market!r}")

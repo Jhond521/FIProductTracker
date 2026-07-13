@@ -111,3 +111,15 @@ export interface StatementPeriodSummary {
 export interface StatementPeriodDetail extends StatementPeriodSummary {
   contributions: PurchaseContribution[];
 }
+
+export interface MarketAggregate {
+  total_balance: number;
+  total_interest: number;
+  total_fees: number;
+}
+
+export interface DashboardSummary {
+  co: MarketAggregate;
+  us: MarketAggregate;
+  highest_cost_product_id: string | null;
+}

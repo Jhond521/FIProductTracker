@@ -124,3 +124,19 @@ class StatementPeriodSummaryRead(BaseModel):
 
 class StatementPeriodDetailRead(StatementPeriodSummaryRead):
     contributions: list[PurchaseContributionRead]
+
+
+class MarketAggregateRead(BaseModel):
+    """Aggregate stats for one market's cards, kept separate per market
+    since CO cards are COP and US cards are USD -- there's no FX rate in
+    this app to combine them into one meaningful number."""
+
+    total_balance: float
+    total_interest: float
+    total_fees: float
+
+
+class DashboardSummaryRead(BaseModel):
+    co: MarketAggregateRead
+    us: MarketAggregateRead
+    highest_cost_product_id: uuid.UUID | None
