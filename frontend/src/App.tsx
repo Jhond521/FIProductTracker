@@ -11,6 +11,7 @@ import { EditPurchase } from "./pages/EditPurchase";
 import { Statement } from "./pages/Statement";
 import { CardStatements } from "./pages/CardStatements";
 import { StatementPeriod } from "./pages/StatementPeriod";
+import { Recommendations } from "./pages/Recommendations";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               <Layout>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/recommendations" element={<Recommendations />} />
                   <Route path="/cards/new" element={<AddCard />} />
                   <Route path="/cards/:productId/edit" element={<EditCard />} />
                   <Route path="/cards/:productId/purchases/new" element={<AddPurchase />} />
@@ -36,6 +38,10 @@ function App() {
                   <Route
                     path="/cards/:productId/statements/:periodEnd"
                     element={<StatementPeriod />}
+                  />
+                  <Route
+                    path="/cards/:productId/recommendations"
+                    element={<Recommendations />}
                   />
                 </Routes>
               </Layout>

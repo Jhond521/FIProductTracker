@@ -163,5 +163,26 @@
     "detailNotFound": "This statement period could not be found.",
     "contributingPurchases": "Contributing purchases",
     "noContributions": "No new purchases this period — balance carried from a prior period."
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "subtitle": "Deterministic, rule-based, across all your cards",
+    "cardSubtitle": "For {{institution}}",
+    "loading": "Loading recommendations…",
+    "loadError": "Could not load recommendations.",
+    "cardGone": "This card no longer exists.",
+    "empty": "No actionable recommendations right now.",
+    "navLink": "Recommendations",
+    "realCostExceedsRateTitle": "Costing more than advertised",
+    "realCostExceedsRateItem": "{{description}} — real cost {{realCost}} vs. disclosed {{disclosedRate}}",
+    "payInFullTitle": "Pay in full to avoid interest",
+    "payInFullItem": "Paying the full {{balance}} balance instead of the {{minimum}} minimum avoids {{interest}} in interest next cycle",
+    "promoExpiringTitle": "Interest-free promos ending soon",
+    "promoExpiringItem_one": "{{description}} — {{count}} installment left on its interest-free promo",
+    "promoExpiringItem_other": "{{description}} — {{count}} installments left on its interest-free promo",
+    "avalancheTitle": "Suggested payoff order (avalanche method)",
+    "avalancheItem": "{{institution}} — {{rate}} · {{balance}} owed",
+    "utilizationTitle": "Utilization risk",
+    "utilizationItem": "{{institution}} — {{utilization}} utilization (above the {{threshold}} threshold)"
   }
 }

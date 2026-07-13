@@ -65,9 +65,14 @@ export function Dashboard() {
           <h1>{t("dashboard.title")}</h1>
           <p className="dashboard-subtitle">{t("dashboard.subtitle")}</p>
         </div>
-        <Link to="/cards/new">
-          <Button>{t("dashboard.addCard")}</Button>
-        </Link>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <Link to="/recommendations" style={{ color: "var(--color-primary)", fontWeight: 600 }}>
+            {t("recommendations.navLink")}
+          </Link>
+          <Link to="/cards/new">
+            <Button>{t("dashboard.addCard")}</Button>
+          </Link>
+        </div>
       </div>
 
       {cards && cards.length > 0 && (
@@ -168,6 +173,9 @@ export function Dashboard() {
                 </span>
                 <Link to={`/cards/${card.id}/statements`} className="product-card-add-purchase">
                   {t("dashboard.viewStatements")}
+                </Link>
+                <Link to={`/cards/${card.id}/recommendations`} className="product-card-add-purchase">
+                  {t("recommendations.navLink")}
                 </Link>
                 <Link to={`/cards/${card.id}/edit`} className="product-card-add-purchase">
                   {t("dashboard.editCard")}

@@ -1,0 +1,46 @@
+.recommendations-subtitle {
+  color: var(--color-text-muted);
+  margin-top: 8px;
+  margin-bottom: 28px;
+}
+
+.recommendations-empty {
+  color: var(--color-text-muted);
+}
+
+.recommendations-section {
+  margin-bottom: 20px;
+}
+
+.recommendations-section h3 {
+  margin-bottom: 12px;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  padding-left: 0;
+}
+
+.recommendations-list-numbered {
+  list-style: decimal;
+  padding-left: 20px;
+}
+
+.recommendations-list li a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.recommendations-list-numbered li a {
+  padding: 6px 8px;
+}
+
+.recommendations-list li a:hover {
+  background: var(--color-surface-muted);
+  text-decoration: underline;
+}

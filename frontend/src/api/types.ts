@@ -138,3 +138,46 @@ export interface DashboardSummary {
   us: MarketAggregate;
   highest_cost_product_id: string | null;
 }
+
+export interface RealCostExceedsRateFlag {
+  product_id: string;
+  purchase_id: string;
+  description: string | null;
+  real_annualized_cost: number;
+  disclosed_rate: number;
+}
+
+export interface PayInFullSavesInterestFlag {
+  product_id: string;
+  current_period_interest: number;
+  minimum_payment: number;
+  statement_balance: number;
+}
+
+export interface PromoExpiringFlag {
+  product_id: string;
+  purchase_id: string;
+  description: string | null;
+  installments_remaining: number;
+}
+
+export interface PayoffRankEntry {
+  product_id: string;
+  institution_name: string;
+  disclosed_rate: number;
+  outstanding_balance: number;
+}
+
+export interface UtilizationRiskFlag {
+  product_id: string;
+  utilization: number;
+  threshold: number;
+}
+
+export interface RecommendationSet {
+  real_cost_exceeds_rate: RealCostExceedsRateFlag[];
+  pay_in_full_saves_interest: PayInFullSavesInterestFlag[];
+  promo_expiring: PromoExpiringFlag[];
+  avalanche_payoff_order: PayoffRankEntry[];
+  utilization_risk: UtilizationRiskFlag[];
+}
