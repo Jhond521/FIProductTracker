@@ -23,6 +23,12 @@ export function AddCard() {
   const [installmentPlanAvailable, setInstallmentPlanAvailable] = useState(false);
   const [statementCutoffDay, setStatementCutoffDay] = useState("1");
   const [paymentDueDay, setPaymentDueDay] = useState("15");
+  const [recurringFee, setRecurringFee] = useState("");
+  const [fxFeePercent, setFxFeePercent] = useState("");
+  const [insuranceOptIn, setInsuranceOptIn] = useState(false);
+  const [insuranceCost, setInsuranceCost] = useState("");
+  const [coSingleInstallmentChargesInterest, setCoSingleInstallmentChargesInterest] =
+    useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,8 +46,15 @@ export function AddCard() {
         day_count_basis: Number(dayCountBasis),
         statement_cutoff_day: Number(statementCutoffDay),
         payment_due_day: Number(paymentDueDay),
+        recurring_fee: recurringFee ? Number(recurringFee) : undefined,
+        fx_fee: fxFeePercent ? Number(fxFeePercent) / 100 : undefined,
+        insurance_opt_in: insuranceOptIn,
+        insurance_cost: insuranceOptIn ? Number(insuranceCost) : undefined,
         ...(market === "CO"
-          ? { ea_rate: Number(eaRatePercent) / 100 }
+          ? {
+              ea_rate: Number(eaRatePercent) / 100,
+              co_single_installment_charges_interest: coSingleInstallmentChargesInterest,
+            }
           : {
               apr: Number(aprPercent) / 100,
               penalty_rate: penaltyRatePercent ? Number(penaltyRatePercent) / 100 : undefined,
@@ -99,17 +112,30 @@ export function AddCard() {
           </FormField>
 
           {market === "CO" ? (
-            <FormField label={t("addCard.eaRateLabel")} hint={t("addCard.eaRateHint")}>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder={t("addCard.eaRatePlaceholder")}
-                value={eaRatePercent}
-                onChange={(e) => setEaRatePercent(e.target.value)}
-                required
-              />
-            </FormField>
+            <>
+              <FormField label={t("addCard.eaRateLabel")} hint={t("addCard.eaRateHint")}>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder={t("addCard.eaRatePlaceholder")}
+                  value={eaRatePercent}
+                  onChange={(e) => setEaRatePercent(e.target.value)}
+                  required
+                />
+              </FormField>
+
+              <FormField
+                label={t("addCard.coSingleInstallmentLabel")}
+                hint={t("addCard.coSingleInstallmentHint")}
+              >
+                <input
+                  type="checkbox"
+                  checked={coSingleInstallmentChargesInterest}
+                  onChange={(e) => setCoSingleInstallmentChargesInterest(e.target.checked)}
+                />
+              </FormField>
+            </>
           ) : (
             <>
               <FormField label={t("addCard.aprLabel")} hint={t("addCard.aprHint")}>
@@ -189,6 +215,50 @@ export function AddCard() {
               required
             />
           </FormField>
+
+          <FormField label={t("addCard.recurringFeeLabel")} hint={t("addCard.recurringFeeHint")}>
+            <input
+              type="number"
+              min={0}
+              step="1"
+              placeholder={t("addCard.recurringFeePlaceholder")}
+              value={recurringFee}
+              onChange={(e) => setRecurringFee(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label={t("addCard.fxFeeLabel")} hint={t("addCard.fxFeeHint")}>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder={t("addCard.fxFeePlaceholder")}
+              value={fxFeePercent}
+              onChange={(e) => setFxFeePercent(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label={t("addCard.insuranceOptInLabel")} hint={t("addCard.insuranceOptInHint")}>
+            <input
+              type="checkbox"
+              checked={insuranceOptIn}
+              onChange={(e) => setInsuranceOptIn(e.target.checked)}
+            />
+          </FormField>
+
+          {insuranceOptIn && (
+            <FormField label={t("addCard.insuranceCostLabel")} hint={t("addCard.insuranceCostHint")}>
+              <input
+                type="number"
+                min={0}
+                step="1"
+                placeholder={t("addCard.insuranceCostPlaceholder")}
+                value={insuranceCost}
+                onChange={(e) => setInsuranceCost(e.target.value)}
+                required
+              />
+            </FormField>
+          )}
 
           {error && <StatusBanner kind="error">{error}</StatusBanner>}
 

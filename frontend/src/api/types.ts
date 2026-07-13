@@ -18,6 +18,11 @@ export interface FinancialProduct {
   installment_plan_available: boolean;
   statement_cutoff_day: number;
   payment_due_day: number;
+  recurring_fee: number | null;
+  insurance_opt_in: boolean;
+  insurance_cost: number | null;
+  fx_fee: number | null;
+  co_single_installment_charges_interest: boolean;
 }
 
 export interface FinancialProductCreate {
@@ -32,6 +37,11 @@ export interface FinancialProductCreate {
   installment_plan_available?: boolean;
   statement_cutoff_day?: number;
   payment_due_day?: number;
+  recurring_fee?: number | null;
+  insurance_opt_in?: boolean;
+  insurance_cost?: number | null;
+  fx_fee?: number | null;
+  co_single_installment_charges_interest?: boolean;
 }
 
 export interface FinancialProductUpdate {
@@ -45,6 +55,11 @@ export interface FinancialProductUpdate {
   installment_plan_available?: boolean;
   statement_cutoff_day?: number;
   payment_due_day?: number;
+  recurring_fee?: number | null;
+  insurance_opt_in?: boolean;
+  insurance_cost?: number | null;
+  fx_fee?: number | null;
+  co_single_installment_charges_interest?: boolean;
 }
 
 export interface Purchase {
