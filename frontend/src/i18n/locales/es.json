@@ -39,7 +39,8 @@
     "noPurchases": "Aún no hay compras.",
     "installmentUnit_one": "cuota",
     "installmentUnit_other": "cuotas",
-    "editCard": "Editar"
+    "editCard": "Editar",
+    "viewStatements": "Ver extractos"
   },
   "addCard": {
     "title": "Agregar una tarjeta",
@@ -73,6 +74,10 @@
     "dayCountHint": "Depende del banco — revisa tu contrato",
     "days365": "365 días",
     "days360": "360 días",
+    "cutoffDayLabel": "Día de corte del extracto",
+    "cutoffDayHint": "Fecha de corte — día del mes en que cierra el extracto (1-28)",
+    "dueDayLabel": "Día de pago",
+    "dueDayHint": "Fecha de pago — día del mes en que vence el pago (1-28)",
     "submit": "Agregar tarjeta",
     "submitting": "Agregando…",
     "error": "No se pudo crear la tarjeta. Inténtalo de nuevo.",
@@ -123,5 +128,23 @@
     "columnSplit": "Reparto",
     "columnBalance": "Saldo",
     "editPurchase": "Editar compra"
+  },
+  "statements": {
+    "title": "Extractos",
+    "subtitle": "{{institution}} · mes a mes",
+    "loading": "Cargando extractos…",
+    "loadError": "No se pudieron cargar los extractos.",
+    "cardGone": "Esta tarjeta ya no existe.",
+    "empty": "Aún no hay actividad en los extractos.",
+    "periodRange": "{{start}} – {{end}}",
+    "dueDate": "Vence {{date}}",
+    "totalDue": "Total a pagar",
+    "principal": "Capital",
+    "interest": "Interés",
+    "fees": "Cuotas de manejo",
+    "detailTitle": "Extracto · {{end}}",
+    "detailNotFound": "No se encontró este periodo de extracto.",
+    "contributingPurchases": "Compras que contribuyen",
+    "noContributions": "No hay compras nuevas este periodo — saldo trasladado de un periodo anterior."
   }
 }

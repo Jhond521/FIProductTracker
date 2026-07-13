@@ -9,6 +9,8 @@ import { EditCard } from "./pages/EditCard";
 import { AddPurchase } from "./pages/AddPurchase";
 import { EditPurchase } from "./pages/EditPurchase";
 import { Statement } from "./pages/Statement";
+import { CardStatements } from "./pages/CardStatements";
+import { StatementPeriod } from "./pages/StatementPeriod";
 
 function App() {
   return (
@@ -30,6 +32,11 @@ function App() {
                     element={<EditPurchase />}
                   />
                   <Route path="/cards/:productId/purchases/:purchaseId" element={<Statement />} />
+                  <Route path="/cards/:productId/statements" element={<CardStatements />} />
+                  <Route
+                    path="/cards/:productId/statements/:periodEnd"
+                    element={<StatementPeriod />}
+                  />
                 </Routes>
               </Layout>
             </ProtectedRoute>

@@ -105,6 +105,9 @@ export function Dashboard() {
                     ? t("dashboard.aprSuffix", { rate: formatPercent(card.apr ?? 0) })
                     : t("dashboard.eaRateSuffix", { rate: formatPercent(card.ea_rate ?? 0) })}
                 </span>
+                <Link to={`/cards/${card.id}/statements`} className="product-card-add-purchase">
+                  {t("dashboard.viewStatements")}
+                </Link>
                 <Link to={`/cards/${card.id}/edit`} className="product-card-add-purchase">
                   {t("dashboard.editCard")}
                 </Link>

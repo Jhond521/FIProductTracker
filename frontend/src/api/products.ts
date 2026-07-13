@@ -7,6 +7,8 @@ import type {
   PurchaseCreate,
   PurchaseSchedule,
   PurchaseUpdate,
+  StatementPeriodDetail,
+  StatementPeriodSummary,
 } from "./types";
 
 const BASE = "/api/v1/internal/products";
@@ -26,4 +28,9 @@ export const productsApi = {
 
   getSchedule: (productId: string, purchaseId: string) =>
     api.get<PurchaseSchedule>(`${BASE}/${productId}/purchases/${purchaseId}/schedule`),
+
+  listStatements: (productId: string) =>
+    api.get<StatementPeriodSummary[]>(`${BASE}/${productId}/statements`),
+  getStatementPeriod: (productId: string, periodEnd: string) =>
+    api.get<StatementPeriodDetail>(`${BASE}/${productId}/statements/${periodEnd}`),
 };

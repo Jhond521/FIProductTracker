@@ -39,7 +39,8 @@
     "noPurchases": "No purchases yet.",
     "installmentUnit_one": "installment",
     "installmentUnit_other": "installments",
-    "editCard": "Edit"
+    "editCard": "Edit",
+    "viewStatements": "View statements"
   },
   "addCard": {
     "title": "Add a card",
@@ -73,6 +74,10 @@
     "dayCountHint": "Bank-specific — check your card agreement",
     "days365": "365 days",
     "days360": "360 days",
+    "cutoffDayLabel": "Statement cutoff day",
+    "cutoffDayHint": "Fecha de corte — day of month the statement closes (1-28)",
+    "dueDayLabel": "Payment due day",
+    "dueDayHint": "Fecha de pago — day of month payment is due (1-28)",
     "submit": "Add card",
     "submitting": "Adding…",
     "error": "Could not create the card. Try again.",
@@ -123,5 +128,23 @@
     "columnSplit": "Split",
     "columnBalance": "Balance",
     "editPurchase": "Edit purchase"
+  },
+  "statements": {
+    "title": "Statements",
+    "subtitle": "{{institution}} · month-by-month",
+    "loading": "Loading statements…",
+    "loadError": "Could not load statements.",
+    "cardGone": "This card no longer exists.",
+    "empty": "No statement activity yet.",
+    "periodRange": "{{start}} – {{end}}",
+    "dueDate": "Due {{date}}",
+    "totalDue": "Total due",
+    "principal": "Principal",
+    "interest": "Interest",
+    "fees": "Fees",
+    "detailTitle": "Statement · {{end}}",
+    "detailNotFound": "This statement period could not be found.",
+    "contributingPurchases": "Contributing purchases",
+    "noContributions": "No new purchases this period — balance carried from a prior period."
   }
 }

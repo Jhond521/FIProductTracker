@@ -29,6 +29,8 @@ class FinancialProduct(Base):
     penalty_rate: Mapped[float | None] = mapped_column(Numeric(6, 4), nullable=True)  # tasa de mora / penalty APR
     min_payment_flat_floor: Mapped[float | None] = mapped_column(Numeric(8, 2), nullable=True)  # US minimum-payment floor
     installment_plan_available: Mapped[bool] = mapped_column(Boolean, default=False)  # US Plan It/Flex Pay style feature
+    statement_cutoff_day: Mapped[int] = mapped_column(default=1)  # Fecha de corte: day of month the statement closes
+    payment_due_day: Mapped[int] = mapped_column(default=15)  # Fecha de pago: day of month payment is due
 
     owner: Mapped["User"] = relationship(back_populates="products")  # noqa: F821
     purchases: Mapped[list["Purchase"]] = relationship(back_populates="product")

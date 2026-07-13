@@ -1,0 +1,64 @@
+.card-statements-subtitle {
+  color: var(--color-text-muted);
+  margin-top: 8px;
+  margin-bottom: 28px;
+}
+
+.card-statements-empty {
+  color: var(--color-text-muted);
+}
+
+.card-statements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-statements-period {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  transition: background 0.15s ease;
+}
+
+.card-statements-period:hover {
+  background: var(--color-surface-muted);
+}
+
+.card-statements-period-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-statements-period-range {
+  font-weight: 600;
+}
+
+.card-statements-period-due {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.card-statements-period-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.card-statements-period-total-label {
+  font-size: 12px;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.card-statements-period-total-value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
