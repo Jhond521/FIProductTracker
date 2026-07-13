@@ -161,3 +161,46 @@ class DashboardSummaryRead(BaseModel):
     co: MarketAggregateRead
     us: MarketAggregateRead
     highest_cost_product_id: uuid.UUID | None
+
+
+class RealCostExceedsRateFlagRead(BaseModel):
+    product_id: uuid.UUID
+    purchase_id: uuid.UUID
+    description: str | None
+    real_annualized_cost: float
+    disclosed_rate: float
+
+
+class PayInFullSavesInterestFlagRead(BaseModel):
+    product_id: uuid.UUID
+    current_period_interest: float
+    minimum_payment: float
+    statement_balance: float
+
+
+class PromoExpiringFlagRead(BaseModel):
+    product_id: uuid.UUID
+    purchase_id: uuid.UUID
+    description: str | None
+    installments_remaining: int
+
+
+class PayoffRankEntryRead(BaseModel):
+    product_id: uuid.UUID
+    institution_name: str
+    disclosed_rate: float
+    outstanding_balance: float
+
+
+class UtilizationRiskFlagRead(BaseModel):
+    product_id: uuid.UUID
+    utilization: float
+    threshold: float
+
+
+class RecommendationSetRead(BaseModel):
+    real_cost_exceeds_rate: list[RealCostExceedsRateFlagRead]
+    pay_in_full_saves_interest: list[PayInFullSavesInterestFlagRead]
+    promo_expiring: list[PromoExpiringFlagRead]
+    avalanche_payoff_order: list[PayoffRankEntryRead]
+    utilization_risk: list[UtilizationRiskFlagRead]

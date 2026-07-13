@@ -8,6 +8,7 @@ import type {
   PurchaseCreate,
   PurchaseSchedule,
   PurchaseUpdate,
+  RecommendationSet,
   StatementPeriodDetail,
   StatementPeriodSummary,
 } from "./types";
@@ -36,4 +37,8 @@ export const productsApi = {
     api.get<StatementPeriodDetail>(`${BASE}/${productId}/statements/${periodEnd}`),
 
   getDashboardSummary: () => api.get<DashboardSummary>(`${BASE}/dashboard-summary`),
+
+  getRecommendations: () => api.get<RecommendationSet>(`${BASE}/recommendations`),
+  getProductRecommendations: (productId: string) =>
+    api.get<RecommendationSet>(`${BASE}/${productId}/recommendations`),
 };

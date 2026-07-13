@@ -163,5 +163,26 @@
     "detailNotFound": "No se encontró este periodo de extracto.",
     "contributingPurchases": "Compras que contribuyen",
     "noContributions": "No hay compras nuevas este periodo — saldo trasladado de un periodo anterior."
+  },
+  "recommendations": {
+    "title": "Recomendaciones",
+    "subtitle": "Determinísticas, basadas en reglas, para todas tus tarjetas",
+    "cardSubtitle": "Para {{institution}}",
+    "loading": "Cargando recomendaciones…",
+    "loadError": "No se pudieron cargar las recomendaciones.",
+    "cardGone": "Esta tarjeta ya no existe.",
+    "empty": "No hay recomendaciones accionables por ahora.",
+    "navLink": "Recomendaciones",
+    "realCostExceedsRateTitle": "Costando más de lo anunciado",
+    "realCostExceedsRateItem": "{{description}} — costo real {{realCost}} vs. {{disclosedRate}} anunciado",
+    "payInFullTitle": "Paga el total para evitar intereses",
+    "payInFullItem": "Pagar el saldo total de {{balance}} en vez del mínimo de {{minimum}} evita {{interest}} en intereses el próximo ciclo",
+    "promoExpiringTitle": "Promociones sin interés por vencer",
+    "promoExpiringItem_one": "{{description}} — queda {{count}} cuota de su promoción sin interés",
+    "promoExpiringItem_other": "{{description}} — quedan {{count}} cuotas de su promoción sin interés",
+    "avalancheTitle": "Orden sugerido de pago (método avalancha)",
+    "avalancheItem": "{{institution}} — {{rate}} · {{balance}} adeudado",
+    "utilizationTitle": "Riesgo de utilización",
+    "utilizationItem": "{{institution}} — utilización de {{utilization}} (supera el umbral de {{threshold}})"
   }
 }

@@ -13,6 +13,11 @@ from app.calculations.amortization import (
     total_interest_cost,
 )
 from app.calculations.rates import ea_to_monthly_rate
+from app.calculations.recommendations import (
+    RecommendationProductInput,
+    RecommendationSet,
+    build_recommendations,
+)
 from app.calculations.statement_periods import (
     PeriodPurchaseInput,
     build_statement_period,
@@ -28,13 +33,19 @@ from app.products.schemas import (
     FinancialProductUpdate,
     InstallmentEntryRead,
     MarketAggregateRead,
+    PayInFullSavesInterestFlagRead,
+    PayoffRankEntryRead,
+    PromoExpiringFlagRead,
     PurchaseContributionRead,
     PurchaseCreate,
     PurchaseRead,
     PurchaseScheduleRead,
     PurchaseUpdate,
+    RealCostExceedsRateFlagRead,
+    RecommendationSetRead,
     StatementPeriodDetailRead,
     StatementPeriodSummaryRead,
+    UtilizationRiskFlagRead,
 )
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -153,6 +164,65 @@ async def get_dashboard_summary(
         ),
         highest_cost_product_id=highest_cost_product_id,
     )
+
+
+async def _recommendation_inputs(
+    current_user: User, db: AsyncSession
+) -> list[RecommendationProductInput]:
+    result = await db.execute(
+        select(FinancialProduct).where(FinancialProduct.owner_id == current_user.id)
+    )
+    inputs = []
+    for product in result.scalars().all():
+        purchase_inputs = await _period_purchase_inputs(product.id, db)
+        inputs.append(
+            RecommendationProductInput(
+                product_id=product.id,
+                institution_name=product.institution_name,
+                market=product.market,
+                credit_limit=float(product.credit_limit),
+                ea_rate=float(product.ea_rate) if product.ea_rate is not None else None,
+                apr=float(product.apr) if product.apr is not None else None,
+                day_count_basis=product.day_count_basis,
+                cutoff_day=product.statement_cutoff_day,
+                payment_due_day=product.payment_due_day,
+                min_payment_flat_floor=(
+                    float(product.min_payment_flat_floor)
+                    if product.min_payment_flat_floor is not None
+                    else None
+                ),
+                purchases=purchase_inputs,
+            )
+        )
+    return inputs
+
+
+def _to_recommendation_set_read(recs: RecommendationSet) -> RecommendationSetRead:
+    return RecommendationSetRead(
+        real_cost_exceeds_rate=[
+            RealCostExceedsRateFlagRead(**f.__dict__) for f in recs.real_cost_exceeds_rate
+        ],
+        pay_in_full_saves_interest=[
+            PayInFullSavesInterestFlagRead(**f.__dict__) for f in recs.pay_in_full_saves_interest
+        ],
+        promo_expiring=[PromoExpiringFlagRead(**f.__dict__) for f in recs.promo_expiring],
+        avalanche_payoff_order=[
+            PayoffRankEntryRead(**e.__dict__) for e in recs.avalanche_payoff_order
+        ],
+        utilization_risk=[UtilizationRiskFlagRead(**f.__dict__) for f in recs.utilization_risk],
+    )
+
+
+@router.get("/recommendations", response_model=RecommendationSetRead)
+async def get_recommendations(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Deterministic, rule-based recommendations across all of the user's
+    cards (PRD Section 7.6, Journey J5)."""
+    inputs = await _recommendation_inputs(current_user, db)
+    recs = build_recommendations(inputs, date.today())
+    return _to_recommendation_set_read(recs)
 
 
 @router.get("/{product_id}", response_model=FinancialProductRead)
@@ -347,3 +417,30 @@ async def get_statement_period(
             for contribution in statement.contributions
         ],
     )
+
+
+@router.get("/{product_id}/recommendations", response_model=RecommendationSetRead)
+async def get_product_recommendations(
+    product_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Same rules as /products/recommendations, filtered to one card --
+    except the avalanche payoff order, which stays cross-card since
+    ranking is inherently relative to the user's other cards; it shows
+    where this card ranks among all of them."""
+    await _get_owned_product(product_id, current_user, db)
+    inputs = await _recommendation_inputs(current_user, db)
+    recs = build_recommendations(inputs, date.today())
+    filtered = RecommendationSet(
+        real_cost_exceeds_rate=[
+            f for f in recs.real_cost_exceeds_rate if f.product_id == product_id
+        ],
+        pay_in_full_saves_interest=[
+            f for f in recs.pay_in_full_saves_interest if f.product_id == product_id
+        ],
+        promo_expiring=[f for f in recs.promo_expiring if f.product_id == product_id],
+        avalanche_payoff_order=recs.avalanche_payoff_order,
+        utilization_risk=[f for f in recs.utilization_risk if f.product_id == product_id],
+    )
+    return _to_recommendation_set_read(filtered)
