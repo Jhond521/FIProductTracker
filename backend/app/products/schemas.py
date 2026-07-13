@@ -27,6 +27,20 @@ class FinancialProductCreate(BaseModel):
     payment_due_day: int = Field(
         default=15, ge=1, le=28, description="Fecha de pago: day of month payment is due"
     )
+    recurring_fee: float | None = Field(
+        default=None, ge=0, description="Cuota de manejo / annual fee, charged per statement cycle"
+    )
+    insurance_opt_in: bool = Field(default=False, description="Common in Colombia; optional add-on in US")
+    insurance_cost: float | None = Field(
+        default=None, ge=0, description="Per statement cycle; required when insurance_opt_in is true"
+    )
+    fx_fee: float | None = Field(
+        default=None, ge=0, description="FX/international transaction fee, e.g. 0.03 for 3%"
+    )
+    co_single_installment_charges_interest: bool = Field(
+        default=False,
+        description="CO only: whether a single-installment (cuota unica) purchase carries interest",
+    )
 
     @model_validator(mode="after")
     def _validate_market_specific_fields(self) -> "FinancialProductCreate":
@@ -38,6 +52,8 @@ class FinancialProductCreate(BaseModel):
             raise ValueError("apr is required for the US market")
         if self.market == "US" and self.min_payment_flat_floor is None:
             self.min_payment_flat_floor = US_DEFAULT_FLAT_FLOOR
+        if self.insurance_opt_in and self.insurance_cost is None:
+            raise ValueError("insurance_cost is required when insurance_opt_in is true")
         return self
 
 
@@ -62,6 +78,11 @@ class FinancialProductUpdate(BaseModel):
     installment_plan_available: bool | None = None
     statement_cutoff_day: int | None = Field(default=None, ge=1, le=28)
     payment_due_day: int | None = Field(default=None, ge=1, le=28)
+    recurring_fee: float | None = Field(default=None, ge=0)
+    insurance_opt_in: bool | None = None
+    insurance_cost: float | None = Field(default=None, ge=0)
+    fx_fee: float | None = Field(default=None, ge=0)
+    co_single_installment_charges_interest: bool | None = None
 
 
 class PurchaseCreate(BaseModel):
