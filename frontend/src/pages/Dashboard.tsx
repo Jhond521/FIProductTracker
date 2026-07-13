@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { productsApi } from "../api/products";
 import { ApiError } from "../api/client";
-import type { FinancialProduct, Purchase } from "../api/types";
+import type { DashboardSummary, FinancialProduct, Purchase } from "../api/types";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { StatusBanner } from "../components/StatusBanner";
@@ -17,6 +17,7 @@ interface CardWithPurchases extends FinancialProduct {
 export function Dashboard() {
   const { t } = useTranslation();
   const [cards, setCards] = useState<CardWithPurchases[] | null>(null);
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,14 +26,20 @@ export function Dashboard() {
     async function load() {
       setError(null);
       try {
-        const products = await productsApi.list();
+        const [products, summaryData] = await Promise.all([
+          productsApi.list(),
+          productsApi.getDashboardSummary(),
+        ]);
         const withPurchases = await Promise.all(
           products.map(async (product) => ({
             ...product,
             purchases: await productsApi.listPurchases(product.id),
           })),
         );
-        if (!cancelled) setCards(withPurchases);
+        if (!cancelled) {
+          setCards(withPurchases);
+          setSummary(summaryData);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof ApiError ? String(err.message) : t("dashboard.loadError"));
@@ -46,7 +53,10 @@ export function Dashboard() {
     };
   }, [t]);
 
-  const totalCreditLimit = cards?.reduce((sum, c) => sum + c.credit_limit, 0) ?? 0;
+  const coCards = cards?.filter((c) => c.market === "CO") ?? [];
+  const usCards = cards?.filter((c) => c.market === "US") ?? [];
+  const coCreditLimit = coCards.reduce((sum, c) => sum + c.credit_limit, 0);
+  const usCreditLimit = usCards.reduce((sum, c) => sum + c.credit_limit, 0);
 
   return (
     <div>
@@ -68,11 +78,55 @@ export function Dashboard() {
               {t("dashboard.cardCount", { count: cards.length })}
             </span>
           </div>
-          <div className="dashboard-stat">
-            <span className="dashboard-stat-value">{formatCOP(totalCreditLimit)}</span>
-            <span className="dashboard-stat-label">{t("dashboard.totalCreditLimit")}</span>
-          </div>
         </div>
+      )}
+
+      {summary && coCards.length > 0 && (
+        <Card className="dashboard-market-summary">
+          <h3>{t("dashboard.marketCo")}</h3>
+          <div className="dashboard-market-summary-stats">
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatCOP(coCreditLimit)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalCreditLimit")}</span>
+            </div>
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatCOP(summary.co.total_balance)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalBalance")}</span>
+            </div>
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatCOP(summary.co.total_interest)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalInterest")}</span>
+            </div>
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatCOP(summary.co.total_fees)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalFees")}</span>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {summary && usCards.length > 0 && (
+        <Card className="dashboard-market-summary">
+          <h3>{t("dashboard.marketUs")}</h3>
+          <div className="dashboard-market-summary-stats">
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatUSD(usCreditLimit)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalCreditLimit")}</span>
+            </div>
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatUSD(summary.us.total_balance)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalBalance")}</span>
+            </div>
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatUSD(summary.us.total_interest)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalInterest")}</span>
+            </div>
+            <div className="dashboard-stat">
+              <span className="dashboard-stat-value">{formatUSD(summary.us.total_fees)}</span>
+              <span className="dashboard-stat-label">{t("dashboard.totalFees")}</span>
+            </div>
+          </div>
+        </Card>
       )}
 
       {error && <StatusBanner kind="error">{error}</StatusBanner>}
@@ -94,7 +148,14 @@ export function Dashboard() {
           <Card key={card.id} className="product-card">
             <div className="product-card-header">
               <div>
-                <h3>{card.institution_name}</h3>
+                <h3>
+                  {card.institution_name}
+                  {summary?.highest_cost_product_id === card.id && (
+                    <span className="product-card-highest-cost">
+                      {t("dashboard.highestCost")}
+                    </span>
+                  )}
+                </h3>
                 <span className="product-card-market">
                   {card.market === "US" ? t("dashboard.marketUs") : t("dashboard.marketCo")}
                 </span>

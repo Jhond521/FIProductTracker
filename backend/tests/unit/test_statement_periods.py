@@ -8,6 +8,7 @@ from app.calculations.statement_periods import (
     build_co_period_statement,
     build_us_period_statement,
     list_statement_periods,
+    outstanding_balance,
     period_shifted,
     statement_period_containing,
 )
@@ -280,3 +281,140 @@ class TestListStatementPeriods:
             date(2026, 2, 15),
             date(2026, 1, 15),
         ]
+
+
+class TestOutstandingBalance:
+    def test_co_balance_before_first_installment_closes_is_full_amount(self):
+        purchase = PeriodPurchaseInput(
+            purchase_id=uuid.uuid4(),
+            amount=300_000.0,
+            purchase_date=date(2026, 3, 10),
+            n_installments=3,
+        )
+        balance = outstanding_balance(
+            market="CO",
+            cutoff_day=15,
+            payment_due_day=5,
+            ea_rate=0.36,
+            purchases=[purchase],
+            as_of=date(2026, 3, 12),  # before the first period even closes
+        )
+        assert balance == pytest.approx(300_000.0)
+
+    def test_co_balance_shrinks_as_installments_close(self):
+        purchase = PeriodPurchaseInput(
+            purchase_id=uuid.uuid4(),
+            amount=300_000.0,
+            purchase_date=date(2026, 3, 10),
+            n_installments=3,
+        )
+        after_one = outstanding_balance(
+            market="CO",
+            cutoff_day=15,
+            payment_due_day=5,
+            ea_rate=0.36,
+            purchases=[purchase],
+            as_of=date(2026, 3, 20),  # first installment period (Mar 15) has closed
+        )
+        after_two = outstanding_balance(
+            market="CO",
+            cutoff_day=15,
+            payment_due_day=5,
+            ea_rate=0.36,
+            purchases=[purchase],
+            as_of=date(2026, 4, 20),
+        )
+        after_all = outstanding_balance(
+            market="CO",
+            cutoff_day=15,
+            payment_due_day=5,
+            ea_rate=0.36,
+            purchases=[purchase],
+            as_of=date(2026, 5, 20),
+        )
+        assert after_one > after_two > after_all
+        assert after_all == 0.0
+
+    def test_co_balance_sums_across_multiple_purchases(self):
+        purchases = [
+            PeriodPurchaseInput(
+                purchase_id=uuid.uuid4(),
+                amount=100_000.0,
+                purchase_date=date(2026, 3, 1),
+                n_installments=1,
+                interest_free_promo=True,
+            ),
+            PeriodPurchaseInput(
+                purchase_id=uuid.uuid4(),
+                amount=50_000.0,
+                purchase_date=date(2026, 3, 1),
+                n_installments=1,
+                interest_free_promo=True,
+            ),
+        ]
+        balance = outstanding_balance(
+            market="CO",
+            cutoff_day=15,
+            payment_due_day=5,
+            ea_rate=0.36,
+            purchases=purchases,
+            as_of=date(2026, 3, 10),  # before cutoff, nothing billed yet
+        )
+        assert balance == pytest.approx(150_000.0)
+
+    def test_us_balance_is_sum_of_purchases_to_date(self):
+        purchases = [
+            PeriodPurchaseInput(
+                purchase_id=uuid.uuid4(),
+                amount=1_000.0,
+                purchase_date=date(2026, 2, 1),
+                n_installments=1,
+            ),
+            PeriodPurchaseInput(
+                purchase_id=uuid.uuid4(),
+                amount=500.0,
+                purchase_date=date(2026, 3, 1),
+                n_installments=1,
+            ),
+        ]
+        balance = outstanding_balance(
+            market="US",
+            cutoff_day=15,
+            payment_due_day=5,
+            ea_rate=None,
+            purchases=purchases,
+            as_of=date(2026, 3, 20),
+        )
+        assert balance == pytest.approx(1_500.0)
+
+    def test_us_balance_excludes_purchases_after_as_of(self):
+        purchases = [
+            PeriodPurchaseInput(
+                purchase_id=uuid.uuid4(),
+                amount=1_000.0,
+                purchase_date=date(2026, 4, 1),
+                n_installments=1,
+            ),
+        ]
+        balance = outstanding_balance(
+            market="US",
+            cutoff_day=15,
+            payment_due_day=5,
+            ea_rate=None,
+            purchases=purchases,
+            as_of=date(2026, 3, 20),
+        )
+        assert balance == 0.0
+
+    def test_no_purchases_is_zero_balance(self):
+        assert (
+            outstanding_balance(
+                market="CO",
+                cutoff_day=15,
+                payment_due_day=5,
+                ea_rate=0.36,
+                purchases=[],
+                as_of=date(2026, 3, 20),
+            )
+            == 0.0
+        )

@@ -40,7 +40,11 @@
     "installmentUnit_one": "installment",
     "installmentUnit_other": "installments",
     "editCard": "Edit",
-    "viewStatements": "View statements"
+    "viewStatements": "View statements",
+    "totalBalance": "total balance",
+    "totalInterest": "interest this cycle",
+    "totalFees": "fees this cycle",
+    "highestCost": "Highest cost"
   },
   "addCard": {
     "title": "Add a card",

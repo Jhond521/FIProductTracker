@@ -40,7 +40,11 @@
     "installmentUnit_one": "cuota",
     "installmentUnit_other": "cuotas",
     "editCard": "Editar",
-    "viewStatements": "Ver extractos"
+    "viewStatements": "Ver extractos",
+    "totalBalance": "saldo total",
+    "totalInterest": "interés de este ciclo",
+    "totalFees": "cuotas de este ciclo",
+    "highestCost": "Mayor costo"
   },
   "addCard": {
     "title": "Agregar una tarjeta",
